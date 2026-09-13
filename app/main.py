@@ -1,6 +1,14 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, status
 from pydantic import BaseModel 
+from pathlib import Path
+
+
+UPLOAD_DIR = Path("uploads")
+
 app = FastAPI()
+
+
+
 
 
 
@@ -12,19 +20,24 @@ async def root():
     return {"message": "Hello, this is from Darsio"}
 
 
-class Document(BaseModel):
-    title:str
-    filename:str
-    file_type:str
+@app.post("/document", status_code = status.HTTP_201_CREATED)
+async def create_document(file : UploadFile =  File(...)):
+    if file.content_type != "application/pdf":
+        raise HTTPException(
+            status_code = status.HTTP_400_BAD_REQUEST,
+            detail = "Only PDF fiels are supported"
+        )
+
+    file_path = UPLOAD_DIR / file.filename
+
+    with file_path.open("wb") as buffer:
+        while chunk := await file.read(1024*1024):
+            buffer.write(chunk)
+    
 
 
-
-class DocumentResponse(BaseModel):
-    title:str
-    filename:str
-    file_type:str
-
-
-@app.post("/document", response_model=DocumentResponse, status_code = status.HTTP_201_CREATED)
-async def create_document(document: Document):
-    return document
+    return {
+        "filename" : file.filename,
+        "content_type" : file.content_type,
+        "message" : "Document uploaded successfully"
+    }
