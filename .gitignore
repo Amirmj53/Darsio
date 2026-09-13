@@ -4,6 +4,7 @@
 # Python cache
 __pycache__/
 *.py[cod]
+__init__.py
 
 # Environment variables / secrets
 .env
@@ -19,3 +20,7 @@ Thumbs.db
 
 #Upload files
 uploads/
+
+
+#Sqlite database
+*.db
