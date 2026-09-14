@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Darsio | دستیار هوشمند مطالعه</title>
+
+    <!-- Persian Font -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar">
+
+        <div class="logo">
+            Darsio
+        </div>
+
+        <div class="nav-text">
+            دستیار هوشمند مطالعه
+        </div>
+
+    </header>
+
+
+    <!-- Main -->
+    <main class="container">
+
+        <!-- Hero -->
+        <section class="hero">
+
+            <div class="eyebrow">
+                فضای مطالعه‌ی هوشمند
+            </div>
+
+            <h1>
+                بهتر درس بخون،
+                <span>هوشمندتر یاد بگیر.</span>
+            </h1>
+
+            <p class="description">
+                جزوه‌ها و فایل‌های درسی خودت رو آپلود کن و
+                خلاصه، نکات مهم و سوالات امتحانی دریافت کن.
+            </p>
+
+            <form
+                class="upload-form"
+                action="/documents"
+                method="post"
+                enctype="multipart/form-data"
+            >
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="عنوان جزوه"
+                    required
+                >
+
+                <input
+                    type="file"
+                    name="file"
+                    accept=".pdf"
+                    required
+                >
+
+                <button type="submit" class="primary-button">
+                    آپلود فایل
+                </button>
+            </form>
+
+        </section>
+
+
+        <!-- Documents -->
+        <section class="documents-section">
+
+            <div class="section-header">
+
+                <h2>
+                    فایل‌های من
+                </h2>
+
+                <span>
+                    {{ documents | length }} فایل
+                </span>
+
+            </div>
+
+
+            {% if documents %}
+
+                <div class="documents-grid">
+
+                    {% for document in documents %}
+
+                        <div class="document-card">
+
+                            <div class="document-info">
+
+                                <div class="document-icon">
+                                    PDF
+                                </div>
+
+                                <div>
+                                    <h3>{{ document.title }}</h3>
+
+                                    <p>{{ document.filename }}</p>
+                                </div>
+
+                            </div>
+
+                            <div class="document-size">
+                                {{ format_file_size(document.file_size) }} 
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        +
+                    </div>
+
+                    <h3>
+                        هنوز فایلی اضافه نکردی
+                    </h3>
+
+                    <p>
+                        اولین فایل درسی خودت رو آپلود کن تا فضای مطالعه‌ات رو بسازیم.
+                    </p>
+
+                </div>
+
+            {% endif %}
+        </section>
+
+    </main>
+
+</body>
+</html>
+```
