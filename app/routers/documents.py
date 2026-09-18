@@ -15,7 +15,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user
 from app.models.document import Document
+from app.models.user import User
 from app.schemas.document import DocumentResponse
 
 
@@ -36,7 +38,8 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 async def upload_document(
     title: str = Form(...),
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     if file.content_type != "application/pdf":
         raise HTTPException(
@@ -55,6 +58,7 @@ async def upload_document(
             file_size += len(chunk)
 
     document = Document(
+        user_id = current_user.id,
         title=title,
         filename=file.filename,
         stored_filename=stored_filename,
@@ -78,10 +82,12 @@ async def upload_document(
     response_model=list[DocumentResponse]
 )
 def get_documents(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user : User = Depends(get_current_user)
 ):
     documents = db.scalars(
         select(Document)
+        .where(Document.user_id == current_user.id)
         .order_by(Document.created_at.desc())
     ).all()
 
@@ -94,9 +100,15 @@ def get_documents(
 )
 def get_document(
     document_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    document = db.get(Document, document_id)
+    document = db.scalar(
+        select(Document).where(
+            Document.id == document_id,
+            Document.user_id == current_user.id
+        )
+    )
 
     if document is None:
         raise HTTPException(
@@ -113,9 +125,15 @@ def get_document(
 )
 def delete_document(
     document_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user : User = Depends(get_current_user)
 ):
-    document = db.get(Document, document_id)
+    document = db.scalar(
+        select(Document).where(
+            Document.id == document_id,
+            Document.user_id == current_user.id
+        )
+    )
 
     if document is None:
         raise HTTPException(

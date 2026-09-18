@@ -1,33 +1,39 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request, Depends
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.document import Document
-from app.services.documents import format_file_size
+from app.dependencies.auth import get_current_user
+from app.models.user import User
 
-
-router = APIRouter()
+router = APIRouter(tags=["Pages"])
 
 templates = Jinja2Templates(directory="templates")
 
 
-@router.get("/")
-def dashboard(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    documents = db.scalars(
-        select(Document)
-        .order_by(Document.created_at.desc())
-    ).all()
+@router.get("/", response_class=HTMLResponse)
+def home(request: Request):
 
     return templates.TemplateResponse(
         request=request,
         name="index.html",
         context={
-            "documents": documents,
-            "format_file_size" : format_file_size
+            "current_user": None
+        }
+    )
+
+
+@router.get("/dashboard", response_class=HTMLResponse)
+def dashboard(
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html",
+        context={
+            "current_user": current_user
         }
     )

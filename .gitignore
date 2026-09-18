@@ -4,7 +4,6 @@
 # Python cache
 __pycache__/
 *.py[cod]
-__init__.py
 
 # Environment variables / secrets
 .env
@@ -17,10 +16,10 @@ __init__.py
 .DS_Store
 Thumbs.db
 
-
-#Upload files
+# Upload files
 uploads/
 
-
-#Sqlite database
+# SQLite database
 *.db
+*.sqlite
+*.sqlite3
