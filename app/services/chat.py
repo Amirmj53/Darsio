@@ -12,8 +12,15 @@ from app.schemas.chat import ConversationCreate, MessageCreate
 def get_user_conversations(db:Session, user:User) -> list[Conversation]:
     return(
         db.query(Conversation)
-        .filter( Conversation.user_id == user.id )
-        .order_by(Conversation.updated_at.desc())
+        .filter( 
+            Conversation.user_id == user.id,
+            Conversation.delete_at.is_(None),
+
+        )
+        .order_by(
+            Conversation.is_pinned.desc(),
+            Conversation.updated_at.desc()
+        )
         .all()
     )
 
@@ -42,10 +49,9 @@ def delete_conversation(
 ) -> None:
     conversation = db.scalar(
         select(Conversation).where(
-            or_(
-                conversation.id == conversation_id,
-                conversation.user_id == user.id
-            )
+            Conversation.id == conversation_id,
+            Conversation.user_id == user.id,
+            Conversation.delete_at.is_(None)
         )
     )
 
@@ -54,10 +60,27 @@ def delete_conversation(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="مکالمه پیدا نشد."
         )
-
-    db.delete(conversation)
+    conversation.delete_at = datetime.now(timezone.utc)
     db.commit()
-    
+
+def restore_conversation(db:Session, user:User, conversation_id:int) -> Conversation:
+    conversation = db.scalar(
+        select(Conversation).where(
+            Conversation.id == conversation_id,
+            Conversation.user_id == user.id,
+            Conversation.delete_at.is_not(None)
+        )
+    )
+
+    if not conversation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="مکالمه پیدا نشد")
+
+    conversation.delete_at = None,
+    conversation.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(conversation)
+
+    return conversation 
 
 def get_conversation(
     db:Session,
@@ -149,3 +172,63 @@ def send_message(
 
     return user_message
 
+
+
+def search_conversations(db: Session, user: User, query: str) -> list[Conversation]:
+    query = query.strip()
+    if not query:
+        return get_user_conversations(db, user)
+
+    return (
+        db.query(Conversation)
+        .filter(
+            Conversation.user_id == user.id,
+            Conversation.delete_at.is_(None),
+            Conversation.title.ilike(f"%{query}%")
+        )
+        .order_by(
+            Conversation.is_pinned.desc(),
+            Conversation.updated_at.desc()
+        )
+        .all()
+    )
+
+def edit_message(
+    db: Session,
+    user: User,
+    message_id: int,
+    new_content: str
+) -> Message:
+    message = db.scalar(
+        select(Message).where(Message.id == message_id)
+    )
+    if not message:
+        raise HTTPException(status_code=404, detail="پیام پیدا نشد")
+
+    conversation = get_conversation(db, user, message.conversation_id)
+
+    if message.role != "user":
+        raise HTTPException(status_code=400, detail="فقط پیام کاربر قابل ویرایش است")
+
+    message.content = new_content.strip()
+
+
+    db.query(Message).filter(
+        Message.conversation_id == conversation.id,
+        Message.created_at > message.created_at,
+        Message.role == "assistant"
+    ).delete(synchronize_session=False)
+
+
+    assistant_message = Message(
+        conversation_id=conversation.id,
+        role="assistant",
+        content="پیام ویرایش‌شده دریافت شد. پاسخ جدید بر اساس متن به‌روز تولید شد.",
+        has_file=False
+    )
+    db.add(assistant_message)
+
+    conversation.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(message)
+    return message

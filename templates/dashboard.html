@@ -8,24 +8,26 @@
     <style>
         :root {
             --bg: #04050c;
-            --sidebar-bg: rgba(10, 12, 20, 0.85);
-            --surface: rgba(255, 255, 255, 0.05);
-            --surface-hover: rgba(255, 255, 255, 0.08);
-            --border: rgba(255, 255, 255, 0.09);
+            --sidebar-bg: #0a0c14;
+            --surface: rgba(255, 255, 255, 0.045);
+            --surface-hover: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.08);
             --text: #eef0f6;
-            --text-muted: #9ca3af;
+            --text-muted: #8b92a5;
             --accent: #818cf8;
-            --user-bubble: rgba(255, 255, 255, 0.045);
+            --danger: #f87171;
+            --success: #4ade80;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: "Onest", sans-serif;
+            font-family: "Onest", system-ui, sans-serif;
             background: var(--bg);
             color: var(--text);
             height: 100vh;
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .dashboard {
@@ -41,39 +43,37 @@
             display: flex;
             flex-direction: column;
             transition: width 0.25s ease;
-            backdrop-filter: blur(20px);
-            z-index: 30;
+            z-index: 40;
         }
-        .sidebar.collapsed { width: 68px; }
+        .sidebar.collapsed { width: 64px; }
 
         .sidebar-header {
-            padding: 1rem;
+            height: 60px;
+            padding: 0 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            min-height: 64px;
+            border-bottom: 1px solid var(--border);
         }
-
         .brand {
             font-weight: 600;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             white-space: nowrap;
             overflow: hidden;
-            transition: opacity 0.2s;
         }
         .sidebar.collapsed .brand { opacity: 0; width: 0; }
 
         .icon-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
             border: none;
             background: transparent;
             color: var(--text-muted);
             cursor: pointer;
             display: grid;
             place-items: center;
-            transition: all 0.15s;
+            transition: 0.15s;
             flex-shrink: 0;
         }
         .icon-btn:hover {
@@ -82,24 +82,24 @@
         }
 
         .sidebar-actions {
-            padding: 0.5rem;
+            padding: 10px 8px;
             display: flex;
             flex-direction: column;
-            gap: 0.35rem;
+            gap: 2px;
         }
         .sidebar-actions button {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.7rem 0.85rem;
+            gap: 10px;
+            padding: 9px 12px;
             border-radius: 10px;
             border: none;
             background: transparent;
             color: var(--text-muted);
             font-family: inherit;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: 0.15s;
             white-space: nowrap;
         }
         .sidebar-actions button:hover {
@@ -111,131 +111,148 @@
         .conversations {
             flex: 1;
             overflow-y: auto;
-            padding: 0.5rem;
+            padding: 6px 8px 12px;
         }
         .sidebar.collapsed .conversations { display: none; }
 
-        /* ===== Conversation Item ===== */
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            padding: 12px 10px 6px;
+            opacity: 0.7;
+        }
+
         .conversation-item {
             position: relative;
-            padding: 0.65rem 0.75rem;
-            border-radius: 12px;
-            cursor: pointer;
-            margin-bottom: 0.3rem;
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            transition: all 0.18s ease;
             display: flex;
             align-items: center;
-            gap: 0.45rem;
+            gap: 6px;
+            padding: 9px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 2px;
+            font-size: 0.87rem;
+            color: var(--text-muted);
+            transition: 0.15s;
         }
         .conversation-item:hover,
         .conversation-item.active {
             background: var(--surface);
             color: var(--text);
         }
-
         .conversation-item .title {
             flex: 1;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        .conversation-item .pin-icon {
-            color: var(--accent);
-            flex-shrink: 0;
-        }
+        .pin-icon { color: var(--accent); flex-shrink: 0; }
 
         .conversation-actions {
             display: none;
             align-items: center;
-            gap: 2px;
+            gap: 1px;
             flex-shrink: 0;
         }
-        .conversation-item:hover .conversation-actions {
-            display: flex;
-        }
-
+        .conversation-item:hover .conversation-actions { display: flex; }
         .conversation-actions button {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
             border: none;
             background: transparent;
             color: var(--text-muted);
             cursor: pointer;
             display: grid;
             place-items: center;
-            transition: all 0.15s;
+            transition: 0.15s;
         }
         .conversation-actions button:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.08);
             color: var(--text);
         }
 
-        /* Context Menu */
         .context-menu {
             position: absolute;
             left: 6px;
             top: calc(100% + 4px);
-            min-width: 175px;
-            background: rgba(16, 18, 28, 0.94);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            padding: 6px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-            z-index: 100;
+            min-width: 170px;
+            background: #12141e;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 5px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+            z-index: 80;
             display: none;
-            animation: menuFadeIn 0.15s ease;
         }
         .context-menu.show { display: block; }
-
-        @keyframes menuFadeIn {
-            from { opacity: 0; transform: translateY(-6px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
         .context-menu button {
             width: 100%;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 0.55rem 0.75rem;
+            gap: 9px;
+            padding: 8px 10px;
             border: none;
             background: transparent;
             color: var(--text);
             font-family: inherit;
-            font-size: 0.87rem;
-            border-radius: 9px;
+            font-size: 0.85rem;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background 0.15s;
             text-align: right;
+            transition: 0.12s;
         }
-        .context-menu button:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        .context-menu button.danger {
-            color: #f87171;
-        }
-        .context-menu button.danger:hover {
-            background: rgba(248, 113, 113, 0.12);
-        }
+        .context-menu button:hover { background: rgba(255,255,255,0.06); }
+        .context-menu button.danger { color: var(--danger); }
+        .context-menu button.danger:hover { background: rgba(248,113,113,0.1); }
         .context-menu .separator {
             height: 1px;
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--border);
             margin: 4px 0;
         }
 
+        .rename-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+        }
+        .rename-input {
+            flex: 1;
+            min-width: 0;
+            background: transparent;
+            border: 1px solid rgba(129,140,248,0.45);
+            border-radius: 7px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.86rem;
+            padding: 4px 8px;
+            outline: none;
+        }
+        .rename-actions { display: flex; gap: 2px; }
+        .rename-actions button {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+        }
+        .rename-actions button.confirm:hover { color: var(--success); }
+        .rename-actions button.cancel:hover { color: var(--danger); }
+
         .sidebar-footer {
-            padding: 0.85rem;
+            padding: 12px 14px;
             border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 0.84rem;
             color: var(--text-muted);
         }
         .sidebar.collapsed .sidebar-footer span,
@@ -244,9 +261,9 @@
             background: none;
             border: none;
             color: var(--text-muted);
-            cursor: pointer;
-            font-size: 0.85rem;
             font-family: inherit;
+            font-size: 0.84rem;
+            cursor: pointer;
         }
         .sidebar-footer button:hover { color: var(--text); }
 
@@ -255,12 +272,12 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: var(--bg);
+            min-width: 0;
         }
 
         .chat-header {
-            height: 64px;
-            padding: 0 1.5rem;
+            height: 60px;
+            padding: 0 24px;
             display: flex;
             align-items: center;
             border-bottom: 1px solid var(--border);
@@ -268,68 +285,83 @@
             font-size: 0.95rem;
         }
 
+        /* ستون چت وسط + از بالا */
         .messages {
             flex: 1;
             overflow-y: auto;
-            padding: 2rem 1rem;
+            padding: 28px 16px 40px;
             display: flex;
             flex-direction: column;
-            gap: 1.75rem;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 18px;
         }
         .messages.centered {
             justify-content: center;
-            align-items: center;
         }
 
         .empty-state {
             text-align: center;
             color: var(--text-muted);
-            max-width: 420px;
+            max-width: 380px;
         }
         .empty-state h2 {
-            font-size: 1.6rem;
+            font-size: 1.45rem;
             font-weight: 500;
             color: var(--text);
-            margin-bottom: 0.6rem;
+            margin-bottom: 8px;
         }
 
-        /* Messages */
+        /* هر ردیف پیام = عرض کامل ستون */
         .message {
-            max-width: 720px;
             width: 100%;
-            margin: 0 auto;
+            max-width: 720px;
             position: relative;
-            line-height: 1.75;
-            font-size: 0.98rem;
-        }
-        .message.user {
-            background: var(--user-bubble);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 16px;
-            padding: 0.9rem 1.2rem;
-            align-self: flex-start;
-        }
-        .message.assistant {
-            padding: 0.2rem 0.5rem;
-            align-self: flex-end;
+            line-height: 1.7;
+            font-size: 0.96rem;
         }
 
+        /* پیام کاربر: ردیف کامل، باکس داخلی متناسب با متن */
+        .message.user {
+            display: flex;
+            justify-content: flex-start;
+        }
+        .message.user .bubble {
+            width: fit-content;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 12px 16px;
+            position: relative;
+        }
+
+        /* پیام دستیار */
+        .message.assistant {
+            padding: 4px 2px;
+            color: var(--text);
+        }
+
+        /* اکشن‌های پیام کاربر */
         .message-actions {
             position: absolute;
             top: -12px;
-            left: 12px;
+            left: 10px;
             display: none;
-            gap: 0.35rem;
-            background: #12141c;
+            gap: 2px;
+            background: #12141e;
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 0.25rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            padding: 3px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+            z-index: 5;
         }
         .message.user:hover .message-actions { display: flex; }
         .message-actions button {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border: none;
             background: transparent;
             color: var(--text-muted);
@@ -337,23 +369,89 @@
             cursor: pointer;
             display: grid;
             place-items: center;
+            transition: 0.12s;
         }
         .message-actions button:hover {
-            background: var(--surface-hover);
+            background: rgba(255,255,255,0.07);
             color: var(--text);
         }
+        .message-actions button.copied { color: var(--success) !important; }
 
+        /* ادیت پیام */
+        .message.user.editing .bubble {
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            padding: 10px 12px;
+        }
+
+        .message-edit-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .message-edit-input {
+            flex: 1;
+            min-width: 0;
+            background: transparent;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            padding: 0;
+            resize: none;
+            line-height: 1.6;
+            min-height: 24px;
+            max-height: 160px;
+        }
+
+        .message-edit-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+            padding-bottom: 1px;
+        }
+
+        .message-edit-actions button {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.06);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: 0.15s;
+        }
+        .message-edit-actions button.confirm:hover {
+            background: rgba(74,222,128,0.12);
+            color: var(--success);
+        }
+        .message-edit-actions button.cancel:hover {
+            background: rgba(248,113,113,0.12);
+            color: var(--danger);
+        }
+
+        /* Typing دقیقاً زیر پیام کاربر و هم‌عرض ستون */
         .typing-indicator {
+            width: 100%;
+            max-width: 720px;
             display: flex;
             gap: 5px;
-            padding: 0.6rem 0.5rem;
-            max-width: 720px;
-            margin: 0 auto;
-            align-self: flex-end;
+            padding: 6px 2px;
         }
         .typing-indicator span {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             background: var(--text-muted);
             border-radius: 50%;
             animation: typing 1.2s infinite ease-in-out;
@@ -361,13 +459,13 @@
         .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
         .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
         @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-4px); opacity: 1; }
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+            30% { transform: translateY(-3px); opacity: 1; }
         }
 
         /* Input */
         .input-area {
-            padding: 1rem 1rem 1.5rem;
+            padding: 12px 16px 20px;
             display: flex;
             justify-content: center;
         }
@@ -376,16 +474,15 @@
             max-width: 720px;
             display: flex;
             align-items: flex-end;
-            gap: 0.6rem;
+            gap: 8px;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 0.75rem 0.9rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            border-radius: 16px;
+            padding: 10px 12px;
+            transition: border-color 0.2s;
         }
         .input-box:focus-within {
-            border-color: rgba(129, 140, 248, 0.4);
-            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.08);
+            border-color: rgba(129,140,248,0.35);
         }
         .input-box textarea {
             flex: 1;
@@ -394,28 +491,27 @@
             outline: none;
             color: var(--text);
             font-family: inherit;
-            font-size: 0.97rem;
+            font-size: 0.95rem;
             resize: none;
-            max-height: 150px;
+            max-height: 140px;
             line-height: 1.5;
-            padding: 0.35rem 0;
+            padding: 6px 0;
         }
         .input-box textarea::placeholder { color: var(--text-muted); }
-
         .input-actions {
             display: flex;
-            gap: 0.4rem;
+            gap: 4px;
             align-items: center;
         }
         .attach-btn, .send-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
             border: none;
             cursor: pointer;
             display: grid;
             place-items: center;
-            transition: all 0.15s;
+            transition: 0.15s;
         }
         .attach-btn {
             background: transparent;
@@ -431,6 +527,127 @@
         }
         .send-btn:hover { opacity: 0.9; }
 
+        /* Toast */
+        .undo-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            background: #12141e;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 0.88rem;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: 0.25s ease;
+        }
+        .undo-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .undo-toast button {
+            background: transparent;
+            border: 1px solid rgba(129,140,248,0.35);
+            color: #a5b4fc;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 0.84rem;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .undo-toast button:hover {
+            background: rgba(129,140,248,0.12);
+        }
+
+        /* Search Overlay */
+        .search-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 5, 12, 0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 200;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 12vh;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .search-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .search-panel {
+            width: min(640px, 92vw);
+            background: rgba(16, 18, 28, 0.94);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transform: translateY(12px) scale(0.98);
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .search-overlay.open .search-panel {
+            transform: translateY(0) scale(1);
+        }
+        .search-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .search-input-wrap svg { color: var(--text-muted); flex-shrink: 0; }
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .search-input::placeholder { color: var(--text-muted); }
+        .search-results {
+            max-height: 380px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .search-item {
+            padding: 12px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .search-item:hover { background: rgba(255, 255, 255, 0.05); }
+        .search-item .name {
+            font-size: 0.92rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .search-item .snippet {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .search-empty {
+            padding: 32px 16px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .highlight { color: #a5b4fc; font-weight: 500; }
+
         @media (max-width: 768px) {
             .sidebar {
                 position: absolute;
@@ -439,209 +656,15 @@
             }
             .sidebar.open { transform: translateX(0); }
         }
-
-        /* ===== Conversation Item ===== */
-        .conversation-item {
-            position: relative;
-            padding: 0.6rem 0.7rem;
-            border-radius: 11px;
-            cursor: pointer;
-            margin-bottom: 0.25rem;
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            transition: all 0.18s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .conversation-item:hover,
-        .conversation-item.active {
-            background: var(--surface);
-            color: var(--text);
-        }
-
-        .conversation-item .title {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .conversation-item .pin-icon {
-            color: var(--accent);
-            flex-shrink: 0;
-        }
-
-        /* دکمه‌های هاور */
-        .conversation-actions {
-            display: none;
-            align-items: center;
-            gap: 2px;
-            flex-shrink: 0;
-        }
-        .conversation-item:hover .conversation-actions {
-            display: flex;
-        }
-
-        .conversation-actions button {
-            width: 26px;
-            height: 26px;
-            border-radius: 7px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            cursor: pointer;
-            display: grid;
-            place-items: center;
-            transition: all 0.15s;
-        }
-        .conversation-actions button:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text);
-        }
-
-        /* ===== Inline Rename ===== */
-        .rename-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            min-width: 0;
-        }
-
-        .rename-input {
-            flex: 1;
-            background: transparent;
-            border: 1px solid rgba(129, 140, 248, 0.5);
-            border-radius: 7px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.87rem;
-            padding: 0.28rem 0.5rem;
-            outline: none;
-            min-width: 0;
-        }
-
-        .rename-actions {
-            display: flex;
-            gap: 2px;
-            flex-shrink: 0;
-        }
-
-        .rename-actions button {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            cursor: pointer;
-            display: grid;
-            place-items: center;
-            transition: all 0.15s;
-        }
-        .rename-actions button:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text);
-        }
-        .rename-actions button.confirm:hover {
-            color: #4ade80;
-        }
-        .rename-actions button.cancel:hover {
-            color: #f87171;
-        }
-
-        /* ===== Section Title (Pinned) ===== */
-        .section-label {
-            font-size: 0.72rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            padding: 0.75rem 0.85rem 0.35rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            opacity: 0.75;
-        }
-
-        /* ========== Context Menu (More) ========== */
-        .context-menu {
-            position: absolute;
-            left: 8px;
-            top: 100%;
-            margin-top: 4px;
-            min-width: 180px;
-            background: rgba(16, 18, 28, 0.92);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            padding: 6px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-            z-index: 100;
-            display: none;
-            animation: menuFadeIn 0.15s ease;
-        }
-
-        .context-menu.show {
-            display: block;
-        }
-
-        @keyframes menuFadeIn {
-            from { opacity: 0; transform: translateY(-6px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .context-menu button {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0.55rem 0.75rem;
-            border: none;
-            background: transparent;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.87rem;
-            border-radius: 9px;
-            cursor: pointer;
-            transition: background 0.15s;
-            text-align: right;
-        }
-
-        .context-menu button:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .context-menu button.danger {
-            color: #f87171;
-        }
-
-        .context-menu button.danger:hover {
-            background: rgba(248, 113, 113, 0.12);
-        }
-
-        .context-menu .separator {
-            height: 1px;
-            background: rgba(255, 255, 255, 0.08);
-            margin: 4px 0;
-        }
-
-        .context-menu svg {
-            flex-shrink: 0;
-            opacity: 0.9;
-        }
-
-
     </style>
 </head>
 <body>
     <div class="dashboard">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="brand">درسیو</div>
                 <button class="icon-btn" id="toggle-sidebar" title="جمع/باز کردن">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2"/>
                         <path d="M9 3v18"/>
                     </svg>
@@ -650,13 +673,13 @@
 
             <div class="sidebar-actions">
                 <button id="new-chat-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 5v14M5 12h14"/>
                     </svg>
                     <span>چت جدید</span>
                 </button>
                 <button id="search-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/>
                         <path d="M21 21l-4.3-4.3"/>
                     </svg>
@@ -674,7 +697,6 @@
             </div>
         </aside>
 
-        <!-- Main -->
         <main class="main">
             <div class="chat-header">
                 <span id="current-chat-title">گفتگوی جدید</span>
@@ -683,7 +705,7 @@
             <div class="messages centered" id="messages">
                 <div class="empty-state" id="empty-state">
                     <h2>چطور می‌تونم کمکت کنم؟</h2>
-                    <p>جزوه، مقاله یا سوالت رو بفرست تا هوشمندانه کمکت کنم</p>
+                    <p>جزوه، مقاله یا سوالت رو بفرست</p>
                 </div>
             </div>
 
@@ -693,12 +715,12 @@
                     <div class="input-actions">
                         <label class="attach-btn" title="ارسال فایل">
                             <input type="file" id="file-input" hidden accept=".pdf,.doc,.docx,.txt,.png,.jpg">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                             </svg>
                         </label>
                         <button class="send-btn" id="send-btn" title="ارسال">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M22 2L11 13"/>
                                 <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
                             </svg>
@@ -709,9 +731,26 @@
         </main>
     </div>
 
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-panel">
+            <div class="search-input-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.3-4.3"/>
+                </svg>
+                <input type="text" class="search-input" id="search-input" placeholder="جستجو در مکالمات..." autocomplete="off">
+            </div>
+            <div class="search-results" id="search-results">
+                <div class="search-empty">شروع به تایپ کنید...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentConversationId = null;
         let openMenuId = null;
+        let lastDeletedConversation = null;
+        let undoTimeout = null;
 
         const sidebar = document.getElementById("sidebar");
         const toggleSidebarBtn = document.getElementById("toggle-sidebar");
@@ -722,12 +761,13 @@
         const sendBtn = document.getElementById("send-btn");
         const newChatBtn = document.getElementById("new-chat-btn");
         const currentChatTitle = document.getElementById("current-chat-title");
+        const searchBtn = document.getElementById("search-btn");
+        const searchOverlay = document.getElementById("search-overlay");
+        const searchInput = document.getElementById("search-input");
+        const searchResults = document.getElementById("search-results");
 
-        toggleSidebarBtn.addEventListener("click", () => {
-            sidebar.classList.toggle("collapsed");
-        });
+        toggleSidebarBtn.onclick = () => sidebar.classList.toggle("collapsed");
 
-        // بستن منو با کلیک بیرون
         document.addEventListener("click", (e) => {
             if (!e.target.closest(".conversation-actions") && !e.target.closest(".context-menu")) {
                 closeAllMenus();
@@ -739,26 +779,38 @@
             openMenuId = null;
         }
 
-        // ========== Message Helpers ==========
-        function createUserMessage(content) {
+        function createUserMessage(content, messageId = null) {
             const div = document.createElement("div");
             div.className = "message user";
+            if (messageId) div.dataset.id = messageId;
+
             div.innerHTML = `
-                <div class="message-actions">
-                    <button title="کپی" onclick="copyText(this)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                        </svg>
-                    </button>
-                    <button title="ویرایش" onclick="editMessage(this)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-                        </svg>
-                    </button>
+                <div class="bubble">
+                    <div class="message-actions">
+                        <button class="copy-btn" title="کپی">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                        </button>
+                        <button class="edit-btn" title="ویرایش">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="content">${content}</div>
                 </div>
-                <div class="content">${content}</div>
             `;
+
+            div.querySelector(".copy-btn").onclick = (e) => {
+                e.stopPropagation();
+                copyText(div.querySelector(".copy-btn"));
+            };
+            div.querySelector(".edit-btn").onclick = (e) => {
+                e.stopPropagation();
+                startMessageEdit(div);
+            };
             return div;
         }
 
@@ -769,16 +821,15 @@
         }
 
         function showTypingIndicator() {
-            const indicator = document.createElement("div");
-            indicator.className = "typing-indicator";
-            indicator.id = "typing-indicator";
-            indicator.innerHTML = `<span></span><span></span><span></span>`;
-            messagesContainer.appendChild(indicator);
+            const el = document.createElement("div");
+            el.className = "typing-indicator";
+            el.innerHTML = `<span></span><span></span><span></span>`;
+            messagesContainer.appendChild(el);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            return indicator;
+            return el;
         }
 
-        async function typeWriter(element, text, delay = 28) {
+        async function typeWriter(element, text, delay = 26) {
             const words = text.split(" ");
             element.textContent = "";
             for (let i = 0; i < words.length; i++) {
@@ -789,159 +840,276 @@
         }
 
         function copyText(btn) {
-            const content = btn.closest(".message").querySelector(".content").textContent;
-            navigator.clipboard.writeText(content);
+            const content = btn.closest(".bubble").querySelector(".content").textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                const original = btn.innerHTML;
+                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>`;
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.classList.remove("copied");
+                }, 1400);
+            });
         }
 
-        function editMessage(btn) {
-            const content = btn.closest(".message").querySelector(".content").textContent;
-            messageInput.value = content;
-            messageInput.focus();
-        }
+        function startMessageEdit(messageEl) {
+            if (messageEl.classList.contains("editing")) return;
 
-        // ========== Conversations ==========
-        async function loadConversations() {
-            try {
-                const res = await fetch("/chat/conversations");
-                if (!res.ok) return;
-                const data = await res.json();
+            const bubble = messageEl.querySelector(".bubble");
+            const contentEl = bubble.querySelector(".content");
+            const originalText = contentEl.textContent;
+            const messageId = messageEl.dataset.id;
+            const actions = bubble.querySelector(".message-actions");
 
-                conversationsList.innerHTML = "";
-
-                const pinned = data.filter(c => c.is_pinned);
-                const unpinned = data.filter(c => !c.is_pinned);
-
-                // بخش پین‌شده‌ها
-                if (pinned.length > 0) {
-                    const label = document.createElement("div");
-                    label.className = "section-label";
-                    label.textContent = "پین‌شده‌ها";
-                    conversationsList.appendChild(label);
-
-                    pinned.forEach(conv => {
-                        conversationsList.appendChild(createConversationItem(conv));
-                    });
-                }
-
-                // بقیه مکالمات
-                if (unpinned.length > 0) {
-                    if (pinned.length > 0) {
-                        const label = document.createElement("div");
-                        label.className = "section-label";
-                        label.textContent = "گفتگوها";
-                        conversationsList.appendChild(label);
-                    }
-
-                    unpinned.forEach(conv => {
-                        conversationsList.appendChild(createConversationItem(conv));
-                    });
-                }
-            } catch (err) {
-                console.error(err);
+            if (!messageId) {
+                console.warn("این پیام هنوز id ندارد؛ بعد از رفرش قابل ویرایش است");
+                return;
             }
-        }
 
-        async function togglePin(id) {
-            try {
-                const res = await fetch(`/chat/conversations/${id}/pin`, { method: "PATCH" });
-                if (!res.ok) return;
-                await loadConversations();
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function startRename(id, currentTitle, item) {
-            const titleEl = item.querySelector(".title");
-            if (!titleEl || item.querySelector(".rename-wrapper")) return;
-
-            // مخفی کردن دکمه‌های هاور موقع ادیت
-            const actions = item.querySelector(".conversation-actions");
+            messageEl.classList.add("editing");
             if (actions) actions.style.display = "none";
 
             const wrapper = document.createElement("div");
-            wrapper.className = "rename-wrapper";
-
+            wrapper.className = "message-edit-wrapper";
             wrapper.innerHTML = `
-                <input type="text" class="rename-input" value="${currentTitle}" maxlength="80">
-                <div class="rename-actions">
+                <textarea class="message-edit-input">${originalText}</textarea>
+                <div class="message-edit-actions">
                     <button class="confirm" title="تأیید">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M5 13l4 4L19 7"/>
                         </svg>
                     </button>
                     <button class="cancel" title="لغو">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M18 6L6 18M6 6l12 12"/>
                         </svg>
                     </button>
                 </div>
             `;
+            contentEl.replaceWith(wrapper);
 
+            const textarea = wrapper.querySelector(".message-edit-input");
+            textarea.focus();
+            textarea.style.height = "auto";
+            textarea.style.height = Math.min(textarea.scrollHeight, 160) + "px";
+            textarea.oninput = () => {
+                textarea.style.height = "auto";
+                textarea.style.height = Math.min(textarea.scrollHeight, 160) + "px";
+            };
+
+            let finished = false;
+            const finish = async (save) => {
+                if (finished) return;
+                finished = true;
+                const newText = textarea.value.trim();
+
+                if (!save || !newText || newText === originalText) {
+                    wrapper.replaceWith(contentEl);
+                    messageEl.classList.remove("editing");
+                    if (actions) actions.style.display = "";
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`/chat/messages/${messageId}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ content: newText })
+                    });
+
+                    if (!res.ok) {
+                        const errBody = await res.text();
+                        console.error("ویرایش ناموفق:", res.status, errBody);
+                        throw new Error("edit failed");
+                    }
+
+                    // بعد از ذخیره موفق، کل مکالمه را از سرور دوباره بگیر
+                    // تا هم پیام ادیت‌شده و هم پاسخ جدید دستیار از دیتابیس بیاید
+                    await loadConversation(currentConversationId, currentChatTitle.textContent);
+
+                } catch (err) {
+                    console.error(err);
+                    wrapper.replaceWith(contentEl);
+                    messageEl.classList.remove("editing");
+                    if (actions) actions.style.display = "";
+                    alert("ذخیره ویرایش انجام نشد. کنسول را چک کن.");
+                }
+            };
+
+            wrapper.querySelector(".confirm").onclick = (e) => { e.stopPropagation(); finish(true); };
+            wrapper.querySelector(".cancel").onclick = (e) => { e.stopPropagation(); finish(false); };
+            textarea.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); finish(true); }
+                if (e.key === "Escape") { e.preventDefault(); finish(false); }
+            });
+        }
+
+        function createConversationItem(conv) {
+            const item = document.createElement("div");
+            item.className = "conversation-item" + (conv.id === currentConversationId ? " active" : "");
+            item.dataset.id = conv.id;
+            item.innerHTML = `
+                ${conv.is_pinned ? `<svg class="pin-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>` : ""}
+                <span class="title">${conv.title}</span>
+                <div class="conversation-actions">
+                    <button class="pin-btn" title="${conv.is_pinned ? 'برداشتن پین' : 'پین'}">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="${conv.is_pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+                    </button>
+                    <button class="more-btn" title="بیشتر">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                </div>
+                <div class="context-menu" id="menu-${conv.id}">
+                    <button class="rename-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                        تغییر نام
+                    </button>
+                    <button class="pin-menu-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="${conv.is_pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+                        ${conv.is_pinned ? 'برداشتن پین' : 'پین کردن'}
+                    </button>
+                    <div class="separator"></div>
+                    <button class="delete-btn danger">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        حذف
+                    </button>
+                </div>
+            `;
+            item.querySelector(".title").onclick = () => loadConversation(conv.id, conv.title);
+            item.querySelector(".pin-btn").onclick = (e) => { e.stopPropagation(); togglePin(conv.id); };
+            item.querySelector(".more-btn").onclick = (e) => {
+                e.stopPropagation();
+                const menu = document.getElementById(`menu-${conv.id}`);
+                if (openMenuId === conv.id) { closeAllMenus(); return; }
+                closeAllMenus();
+                menu.classList.add("show");
+                openMenuId = conv.id;
+            };
+            item.querySelector(".rename-btn").onclick = (e) => { e.stopPropagation(); closeAllMenus(); startRename(conv.id, conv.title, item); };
+            item.querySelector(".pin-menu-btn").onclick = (e) => { e.stopPropagation(); closeAllMenus(); togglePin(conv.id); };
+            item.querySelector(".delete-btn").onclick = (e) => { e.stopPropagation(); closeAllMenus(); deleteConversation(conv.id); };
+            return item;
+        }
+
+        async function loadConversations() {
+            try {
+                const res = await fetch("/chat/conversations");
+                if (!res.ok) return;
+                const data = await res.json();
+                conversationsList.innerHTML = "";
+                const pinned = data.filter(c => c.is_pinned);
+                const unpinned = data.filter(c => !c.is_pinned);
+
+                if (pinned.length) {
+                    const label = document.createElement("div");
+                    label.className = "section-label";
+                    label.textContent = "پین‌شده‌ها";
+                    conversationsList.appendChild(label);
+                    pinned.forEach(c => conversationsList.appendChild(createConversationItem(c)));
+                }
+                if (unpinned.length) {
+                    if (pinned.length) {
+                        const label = document.createElement("div");
+                        label.className = "section-label";
+                        label.textContent = "گفتگوها";
+                        conversationsList.appendChild(label);
+                    }
+                    unpinned.forEach(c => conversationsList.appendChild(createConversationItem(c)));
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadConversation(id, title) {
+            currentConversationId = id;
+            currentChatTitle.textContent = title || "گفتگوی جدید";
+            document.querySelectorAll(".conversation-item").forEach(el => {
+                el.classList.toggle("active", el.dataset.id == id);
+            });
+            try {
+                const res = await fetch(`/chat/conversations/${id}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                messagesContainer.innerHTML = "";
+                if (!data.messages?.length) {
+                    messagesContainer.classList.add("centered");
+                    messagesContainer.appendChild(emptyState);
+                    return;
+                }
+                messagesContainer.classList.remove("centered");
+                data.messages.forEach(msg => {
+                    if (msg.role === "user") {
+                        messagesContainer.appendChild(createUserMessage(msg.content, msg.id));
+                    } else {
+                        const el = createAssistantMessage();
+                        el.textContent = msg.content;
+                        messagesContainer.appendChild(el);
+                    }
+                });
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            } catch (err) { console.error(err); }
+        }
+
+        async function togglePin(id) {
+            try {
+                const res = await fetch(`/chat/conversations/${id}/pin`, { method: "PATCH" });
+                if (res.ok) await loadConversations();
+            } catch (err) { console.error(err); }
+        }
+
+        function startRename(id, currentTitle, item) {
+            const titleEl = item.querySelector(".title");
+            if (!titleEl || item.querySelector(".rename-wrapper")) return;
+            const actions = item.querySelector(".conversation-actions");
+            if (actions) actions.style.display = "none";
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "rename-wrapper";
+            wrapper.innerHTML = `
+                <input class="rename-input" value="${currentTitle}" maxlength="80">
+                <div class="rename-actions">
+                    <button class="confirm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+                    <button class="cancel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                </div>
+            `;
             titleEl.replaceWith(wrapper);
-
             const input = wrapper.querySelector(".rename-input");
             input.focus();
             input.select();
 
-            let finished = false;
-
+            let done = false;
             const finish = async (save) => {
-                if (finished) return;
-                finished = true;
-
+                if (done) return;
+                done = true;
                 const newTitle = input.value.trim();
-
                 if (!save || !newTitle || newTitle === currentTitle) {
                     await loadConversations();
                     return;
                 }
-
                 try {
                     const res = await fetch(`/chat/conversations/${id}/rename`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ title: newTitle })
                     });
-
-                    if (res.ok && currentConversationId === id) {
-                        currentChatTitle.textContent = newTitle;
-                    }
-                } catch (err) {
-                    console.error(err);
-                }
-
+                    if (res.ok && currentConversationId === id) currentChatTitle.textContent = newTitle;
+                } catch (err) { console.error(err); }
                 await loadConversations();
             };
-
-            wrapper.querySelector(".confirm").addEventListener("click", (e) => {
-                e.stopPropagation();
-                finish(true);
-            });
-
-            wrapper.querySelector(".cancel").addEventListener("click", (e) => {
-                e.stopPropagation();
-                finish(false);
-            });
-
+            wrapper.querySelector(".confirm").onclick = (e) => { e.stopPropagation(); finish(true); };
+            wrapper.querySelector(".cancel").onclick = (e) => { e.stopPropagation(); finish(false); };
             input.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    finish(true);
-                } else if (e.key === "Escape") {
-                    e.preventDefault();
-                    finish(false);
-                }
+                if (e.key === "Enter") { e.preventDefault(); finish(true); }
+                if (e.key === "Escape") { e.preventDefault(); finish(false); }
             });
         }
 
         async function deleteConversation(id) {
-            if (!confirm("آیا از حذف این مکالمه مطمئن هستید؟")) return;
-
+            const item = document.querySelector(`.conversation-item[data-id="${id}"]`);
+            const title = item?.querySelector(".title")?.textContent || "مکالمه";
             try {
                 const res = await fetch(`/chat/conversations/${id}`, { method: "DELETE" });
                 if (!res.ok) return;
-
+                lastDeletedConversation = { id, title };
                 if (currentConversationId === id) {
                     currentConversationId = null;
                     currentChatTitle.textContent = "گفتگوی جدید";
@@ -950,149 +1118,99 @@
                     messagesContainer.appendChild(emptyState);
                 }
                 await loadConversations();
-            } catch (err) {
-                console.error(err);
-            }
+                showUndoToast(title);
+            } catch (err) { console.error(err); }
         }
-        function createConversationItem(conv) {
-            const item = document.createElement("div");
-            item.className = "conversation-item" + (conv.id === currentConversationId ? " active" : "");
-            item.dataset.id = conv.id;
 
-            item.innerHTML = `
-                ${conv.is_pinned ? `
-                    <svg class="pin-icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
-                    </svg>
-                ` : ""}
-
-                <span class="title">${conv.title}</span>
-
-                <div class="conversation-actions">
-                    <button class="pin-btn" title="${conv.is_pinned ? 'برداشتن پین' : 'پین کردن'}">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="${conv.is_pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-                            <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
-                        </svg>
-                    </button>
-                    <button class="more-btn" title="بیشتر">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="12" cy="5" r="1.5"/>
-                            <circle cx="12" cy="12" r="1.5"/>
-                            <circle cx="12" cy="19" r="1.5"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="context-menu" id="menu-${conv.id}">
-                    <button class="rename-btn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-                        </svg>
-                        تغییر نام
-                    </button>
-                    <button class="pin-menu-btn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="${conv.is_pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-                            <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
-                        </svg>
-                        ${conv.is_pinned ? 'برداشتن پین' : 'پین کردن'}
-                    </button>
-                    <div class="separator"></div>
-                    <button class="delete-btn danger">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
-                        حذف
-                    </button>
-                </div>
-            `;
-
-            // باز کردن مکالمه
-            item.querySelector(".title").addEventListener("click", () => {
-                loadConversation(conv.id, conv.title);
-            });
-
-            // پین سریع
-            item.querySelector(".pin-btn").addEventListener("click", (e) => {
-                e.stopPropagation();
-                togglePin(conv.id);
-            });
-
-            // منوی More
-            item.querySelector(".more-btn").addEventListener("click", (e) => {
-                e.stopPropagation();
-                const menu = document.getElementById(`menu-${conv.id}`);
-                if (openMenuId === conv.id) {
-                    closeAllMenus();
-                    return;
+        function showUndoToast(title) {
+            document.getElementById("undo-toast")?.remove();
+            if (undoTimeout) clearTimeout(undoTimeout);
+            const toast = document.createElement("div");
+            toast.id = "undo-toast";
+            toast.className = "undo-toast";
+            toast.innerHTML = `<span>«${title}» حذف شد</span><button id="undo-btn">بازگردانی</button>`;
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add("show"));
+            document.getElementById("undo-btn").onclick = async () => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 250);
+                if (undoTimeout) clearTimeout(undoTimeout);
+                if (lastDeletedConversation) {
+                    try {
+                        await fetch(`/chat/conversations/${lastDeletedConversation.id}/restore`, { method: "POST" });
+                        await loadConversations();
+                    } catch (err) { console.error(err); }
+                    lastDeletedConversation = null;
                 }
-                closeAllMenus();
-                menu.classList.add("show");
-                openMenuId = conv.id;
-            });
-
-            // تغییر نام
-            item.querySelector(".rename-btn").addEventListener("click", (e) => {
-                e.stopPropagation();
-                closeAllMenus();
-                startRename(conv.id, conv.title, item);
-            });
-
-            // پین از منو
-            item.querySelector(".pin-menu-btn").addEventListener("click", (e) => {
-                e.stopPropagation();
-                closeAllMenus();
-                togglePin(conv.id);
-            });
-
-            // حذف
-            item.querySelector(".delete-btn").addEventListener("click", (e) => {
-                e.stopPropagation();
-                closeAllMenus();
-                deleteConversation(conv.id);
-            });
-
-            return item;
+            };
+            undoTimeout = setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 250);
+                lastDeletedConversation = null;
+            }, 5000);
         }
 
+        function openSearch() {
+            searchOverlay.classList.add("open");
+            searchInput.value = "";
+            searchResults.innerHTML = `<div class="search-empty">شروع به تایپ کنید...</div>`;
+            setTimeout(() => searchInput.focus(), 40);
+        }
+        function closeSearch() {
+            searchOverlay.classList.remove("open");
+        }
+        searchBtn.onclick = openSearch;
+        searchOverlay.onclick = (e) => { if (e.target === searchOverlay) closeSearch(); };
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeSearch();
+            if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); openSearch(); }
+        });
 
-        async function loadConversation(id, title) {
-            currentConversationId = id;
-            currentChatTitle.textContent = title || "گفتگوی جدید";
+        let searchTimeout = null;
+        searchInput.addEventListener("input", () => {
+            clearTimeout(searchTimeout);
+            const q = searchInput.value.trim();
+            if (!q) {
+                searchResults.innerHTML = `<div class="search-empty">شروع به تایپ کنید...</div>`;
+                return;
+            }
+            searchTimeout = setTimeout(() => performSearch(q), 200);
+        });
 
-            document.querySelectorAll(".conversation-item").forEach(el => {
-                el.classList.toggle("active", el.dataset.id == id);
-            });
-
+        async function performSearch(query) {
             try {
-                const res = await fetch(`/chat/conversations/${id}`);
-                if (!res.ok) return;
-                const data = await res.json();
-
-                messagesContainer.innerHTML = "";
-
-                if (!data.messages || data.messages.length === 0) {
-                    messagesContainer.classList.add("centered");
-                    messagesContainer.appendChild(emptyState);
+                let items = [];
+                const res = await fetch(`/chat/conversations/search?q=${encodeURIComponent(query)}`);
+                if (res.ok) items = await res.json();
+                else {
+                    const all = await fetch("/chat/conversations").then(r => r.json());
+                    items = all.filter(c => c.title.toLowerCase().includes(query.toLowerCase()));
+                }
+                if (!items.length) {
+                    searchResults.innerHTML = `<div class="search-empty">نتیجه‌ای پیدا نشد</div>`;
                     return;
                 }
-
-                messagesContainer.classList.remove("centered");
-                data.messages.forEach(msg => {
-                    if (msg.role === "user") {
-                        messagesContainer.appendChild(createUserMessage(msg.content));
-                    } else {
-                        const el = createAssistantMessage();
-                        el.textContent = msg.content;
-                        messagesContainer.appendChild(el);
-                    }
+                searchResults.innerHTML = items.map(conv => {
+                    const highlighted = conv.title.replace(new RegExp(`(${query})`, "gi"), `<span class="highlight">$1</span>`);
+                    return `
+                        <div class="search-item" data-id="${conv.id}" data-title="${conv.title}">
+                            <div class="name">${highlighted}</div>
+                            <div class="snippet">کلیک کنید تا مکالمه باز شود</div>
+                        </div>
+                    `;
+                }).join("");
+                searchResults.querySelectorAll(".search-item").forEach(el => {
+                    el.onclick = () => {
+                        closeSearch();
+                        loadConversation(Number(el.dataset.id), el.dataset.title);
+                    };
                 });
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             } catch (err) {
                 console.error(err);
+                searchResults.innerHTML = `<div class="search-empty">خطا در جستجو</div>`;
             }
         }
 
-        // ========== Send Message ==========
         async function sendMessage() {
             const content = messageInput.value.trim();
             if (!content) return;
@@ -1102,21 +1220,17 @@
                     const res = await fetch("/chat/conversations", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ title: content.substring(0, 40) })
+                        body: JSON.stringify({ title: content.slice(0, 40) })
                     });
                     if (!res.ok) return;
                     const conv = await res.json();
                     currentConversationId = conv.id;
                     currentChatTitle.textContent = conv.title;
                     await loadConversations();
-                } catch (err) {
-                    console.error(err);
-                    return;
-                }
+                } catch (err) { console.error(err); return; }
             }
 
-            const empty = document.getElementById("empty-state");
-            if (empty) empty.remove();
+            document.getElementById("empty-state")?.remove();
             messagesContainer.classList.remove("centered");
 
             messagesContainer.appendChild(createUserMessage(content));
@@ -1125,53 +1239,41 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
             const typing = showTypingIndicator();
-
             try {
                 const res = await fetch(`/chat/conversations/${currentConversationId}/messages`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ content })
                 });
-
                 typing.remove();
                 if (!res.ok) return;
 
-                const demoReply = "پیامت رو دریافت کردم. به زودی مدل هوش مصنوعی به این بخش اضافه می‌شه و می‌تونی ازش برای خلاصه‌سازی جزوه، تولید نمونه سوال و مطالعه هوشمند استفاده کنی.";
-
                 const assistantEl = createAssistantMessage();
                 messagesContainer.appendChild(assistantEl);
-                await typeWriter(assistantEl, demoReply, 32);
+                await typeWriter(assistantEl, "پیامت رو دریافت کردم. به زودی مدل هوش مصنوعی به این بخش اضافه می‌شه.", 28);
 
-                // آپدیت عنوان و سایدبار
                 const convRes = await fetch(`/chat/conversations/${currentConversationId}`);
                 if (convRes.ok) {
-                    const convData = await convRes.json();
-                    currentChatTitle.textContent = convData.title;
+                    const data = await convRes.json();
+                    currentChatTitle.textContent = data.title;
                 }
                 await loadConversations();
-
             } catch (err) {
                 typing.remove();
                 console.error(err);
             }
         }
 
-        // ========== Events ==========
-        sendBtn.addEventListener("click", sendMessage);
-
+        sendBtn.onclick = sendMessage;
         messageInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
+            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
-
         messageInput.addEventListener("input", function () {
             this.style.height = "auto";
-            this.style.height = Math.min(this.scrollHeight, 150) + "px";
+            this.style.height = Math.min(this.scrollHeight, 140) + "px";
         });
 
-        newChatBtn.addEventListener("click", async () => {
+        newChatBtn.onclick = async () => {
             try {
                 const res = await fetch("/chat/conversations", {
                     method: "POST",
@@ -1186,12 +1288,9 @@
                 messagesContainer.classList.add("centered");
                 messagesContainer.appendChild(emptyState);
                 await loadConversations();
-            } catch (err) {
-                console.error(err);
-            }
-        });
+            } catch (err) { console.error(err); }
+        };
 
-        // شروع
         loadConversations();
     </script>
 </body>

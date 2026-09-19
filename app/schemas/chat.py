@@ -19,6 +19,10 @@ class MessageResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class MessageUpdate(BaseModel):
+    content: str = Field(..., min_length=1)
+
+
 class ConversationCreate(BaseModel):
     title: str = Field(default="گفتگوی جدید", min_length=1, max_length=255)
 

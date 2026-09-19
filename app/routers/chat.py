@@ -11,6 +11,7 @@ from app.schemas.chat import (
     ConversationRename,
     MessageCreate,
     MessageResponse,
+    MessageUpdate
 )
 from app.services import chat as chat_service
 
@@ -40,19 +41,37 @@ def create_conversation(
 ):
     return chat_service.create_conversation(db, current_user, data)
 
+@router.get("/conversations/search", response_model=list[ConversationResponse])
+def search_conversations(
+    q: str = "",
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return chat_service.search_conversations(db, current_user, q)
+
 
 @router.delete(
-        "/conversation/{conversation_id}",
-        status_code=status.HTTP_204_NO_CONTENT,
+    "/conversations/{conversation_id}",
+    status_code=status.HTTP_204_NO_CONTENT
 )
 def delete_conversation(
-    conversation_id : int,
-    current_user : User = Depends(get_current_user),
-    db:Session = Depends(get_db)
+    conversation_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     chat_service.delete_conversation(db, current_user, conversation_id)
     return None
 
+@router.post(
+    "/conversations/{conversation_id}/restore",
+    response_model=ConversationResponse
+)
+def restore_conversation(
+    conversation_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return chat_service.restore_conversation(db, current_user, conversation_id)
 
 
 @router.get(
@@ -84,6 +103,22 @@ def rename_conversation(
 ):
     return chat_service.rename_conversation(db, current_user, conversation_id, data.title)
 
+
+
+
+@router.patch(
+    "/messages/{message_id}",
+    response_model=MessageResponse
+)
+def edit_message(
+    message_id: int,
+    data: MessageUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return chat_service.edit_message(
+        db, current_user, message_id, data.content
+    )
 
 @router.post(
     "/conversations/{conversation_id}/messages",
