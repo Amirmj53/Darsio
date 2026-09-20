@@ -303,13 +303,64 @@
         .empty-state {
             text-align: center;
             color: var(--text-muted);
-            max-width: 380px;
+            max-width: 560px;
         }
         .empty-state h2 {
             font-size: 1.45rem;
             font-weight: 500;
             color: var(--text);
             margin-bottom: 8px;
+        }
+        .empty-state .empty-sub {
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+
+        .suggestion-rotator {
+            min-height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 22px;
+            transition: opacity 0.4s ease;
+        }
+        .suggestion-rotator.fade-out { opacity: 0; }
+        .caret {
+            width: 2px;
+            height: 1.1em;
+            background: var(--accent);
+            border-radius: 1px;
+            animation: caretBlink 1s steps(2, start) infinite;
+        }
+        @keyframes caretBlink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        .suggestion-chip {
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+        .suggestion-chip:hover {
+            border-color: rgba(129, 140, 248, 0.5);
+            color: var(--text);
+            background: rgba(129, 140, 248, 0.12);
         }
 
         /* هر ردیف پیام = عرض کامل ستون */
@@ -665,6 +716,7 @@
             position: relative;
             padding: 10px;
             border-top: 1px solid var(--border);
+            margin-top: auto;
         }
 
         .user-chip {
@@ -715,6 +767,8 @@
             flex: 1;
         }
         .sidebar.collapsed .user-meta { display: none; }
+        .sidebar.collapsed .sidebar-footer { padding: 10px 0; }
+        .sidebar.collapsed .user-chip { justify-content: center; padding: 8px 0; }
 
         .user-name {
             font-size: 0.88rem;
@@ -1270,7 +1324,11 @@
             <div class="messages centered" id="messages">
                 <div class="empty-state" id="empty-state">
                     <h2>چطور می‌تونم کمکت کنم؟</h2>
-                    <p>جزوه، مقاله یا سوالت رو بفرست</p>
+                    <p class="empty-sub">جزوه، مقاله یا سوالت رو بفرست</p>
+                    <div class="suggestion-rotator" id="suggestion-rotator" aria-hidden="true">
+                        <span class="suggestion-text" id="suggestion-text"></span><span class="caret"></span>
+                    </div>
+                    <div class="suggestion-chips" id="suggestion-chips"></div>
                 </div>
             </div>
 
@@ -1497,6 +1555,64 @@
         const searchOverlay = document.getElementById("search-overlay");
         const searchInput = document.getElementById("search-input");
         const searchResults = document.getElementById("search-results");
+
+        // ----- Empty-state rotating suggestions -----
+        const SUGGESTIONS = [
+            "جزوه‌ام را خلاصه کن",
+            "برای امتحان نمونه سؤال بده",
+            "این مبحث را ساده توضیح بده",
+            "نکات مهم این فصل را بگو",
+            "یک برنامه‌ی مرور برای فردا بچین"
+        ];
+        const suggestionText = document.getElementById("suggestion-text");
+        const suggestionRotator = document.getElementById("suggestion-rotator");
+        const suggestionChips = document.getElementById("suggestion-chips");
+        let suggestionGen = 0;
+        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+        async function runSuggestionLoop() {
+            const gen = suggestionGen;
+            let i = 0;
+            while (gen === suggestionGen && emptyState.isConnected) {
+                const text = SUGGESTIONS[i % SUGGESTIONS.length];
+                suggestionRotator.classList.remove("fade-out");
+                suggestionText.textContent = "";
+                for (const ch of text) {
+                    if (gen !== suggestionGen || !emptyState.isConnected) return;
+                    suggestionText.textContent += ch;
+                    await sleep(32);
+                }
+                await sleep(1700);
+                if (gen !== suggestionGen || !emptyState.isConnected) return;
+                suggestionRotator.classList.add("fade-out");
+                await sleep(420);
+                i++;
+            }
+        }
+
+        function startSuggestions() {
+            suggestionGen++;
+            runSuggestionLoop();
+        }
+
+        function stopSuggestions() {
+            suggestionGen++;
+            if (suggestionText) suggestionText.textContent = "";
+            if (suggestionRotator) suggestionRotator.classList.remove("fade-out");
+        }
+
+        SUGGESTIONS.forEach(s => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "suggestion-chip";
+            btn.textContent = s;
+            btn.onclick = () => {
+                messageInput.value = s;
+                messageInput.focus();
+                messageInput.dispatchEvent(new Event("input"));
+            };
+            suggestionChips.appendChild(btn);
+        });
 
         toggleSidebarBtn.onclick = () => sidebar.classList.toggle("collapsed");
 
@@ -1762,9 +1878,11 @@
                 if (!res.ok) return;
                 const data = await res.json();
                 messagesContainer.innerHTML = "";
+                stopSuggestions();
                 if (!data.messages?.length) {
                     messagesContainer.classList.add("centered");
                     messagesContainer.appendChild(emptyState);
+                    startSuggestions();
                     return;
                 }
                 messagesContainer.classList.remove("centered");
@@ -1848,6 +1966,7 @@
                     messagesContainer.innerHTML = "";
                     messagesContainer.classList.add("centered");
                     messagesContainer.appendChild(emptyState);
+                    startSuggestions();
                 }
                 await loadConversations();
                 showUndoToast(title);
@@ -1963,6 +2082,7 @@
             }
 
             document.getElementById("empty-state")?.remove();
+            stopSuggestions();
             messagesContainer.classList.remove("centered");
 
             messagesContainer.appendChild(createUserMessage(content));
@@ -2019,6 +2139,7 @@
                 messagesContainer.innerHTML = "";
                 messagesContainer.classList.add("centered");
                 messagesContainer.appendChild(emptyState);
+                startSuggestions();
                 await loadConversations();
             } catch (err) { console.error(err); }
         };
@@ -2336,6 +2457,7 @@
 
 
         // شروع
+        startSuggestions();
         loadProfile();
         loadConversations();
     </script>
