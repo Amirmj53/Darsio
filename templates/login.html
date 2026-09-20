@@ -4,140 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ورود | درسیو</title>
-    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --hero-base: #04050c;
-            --heading: #eef0f6;
-            --body-muted: #b9becf;
-            --glass-fill: rgba(255,255,255,0.08);
-            --glass-border: rgba(255,255,255,0.16);
-            --action-inverse: #ffffff;
-            --action-inverse-fg: #2f2f33;
-        }
-        * { margin: 0; box-sizing: border-box; }
-        body {
-            font-family: "Onest", sans-serif;
-            background: var(--hero-base);
-            color: var(--heading);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-        }
-        .card {
-            width: 100%;
-            max-width: 26rem;
-            background: var(--glass-fill);
-            border: 1px solid var(--glass-border);
-            border-radius: 1.5rem;
-            padding: 2.5rem 2rem;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            font-weight: 500;
-            font-size: 1.35rem;
-            margin-bottom: 2rem;
-            color: var(--heading);
-            text-decoration: none;
-        }
-        .logo svg { width: 1.5rem; height: 1.5rem; }
-        h1 { font-size: 1.6rem; font-weight: 500; text-align: center; margin-bottom: 0.5rem; }
-        .subtitle { text-align: center; color: var(--body-muted); font-size: 0.95rem; margin-bottom: 2rem; }
-        .field { margin-bottom: 1.25rem; }
-        label { display: block; font-size: 0.875rem; color: var(--body-muted); margin-bottom: 0.4rem; }
-        input {
-            width: 100%;
-            height: 3.1rem;
-            padding: 0 1rem;
-            border-radius: 0.9rem;
-            border: 1px solid var(--glass-border);
-            background: rgba(4,5,12,0.5);
-            color: var(--heading);
-            font-size: 1rem;
-            font-family: inherit;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        input:focus { border-color: rgba(255,255,255,0.35); }
-        .error {
-            background: rgba(220,80,80,0.15);
-            border: 1px solid rgba(220,80,80,0.3);
-            color: #f5a8a8;
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            font-size: 0.875rem;
-            margin-bottom: 1.25rem;
-        }
-        .submit {
-            width: 100%;
-            height: 3.1rem;
-            border-radius: 9999px;
-            background: var(--action-inverse);
-            color: var(--action-inverse-fg);
-            font-weight: 500;
-            font-size: 1rem;
-            border: none;
-            cursor: pointer;
-            margin-top: 0.5rem;
-            transition: background 0.15s;
-        }
-        .submit:hover { background: rgba(255,255,255,0.88); }
-        .switch {
-            text-align: center;
-            margin-top: 1.75rem;
-            font-size: 0.9rem;
-            color: var(--body-muted);
-        }
-        .switch a { color: var(--heading); font-weight: 500; text-decoration: none; }
-        .back {
-            display: block;
-            text-align: center;
-            margin-top: 1.25rem;
-            font-size: 0.85rem;
-            color: var(--body-muted);
-            text-decoration: none;
-        }
-    </style>
+    <meta name="description" content="ورود به حساب درسیو">
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/auth.css">
 </head>
 <body>
-    <div class="card">
-        <a href="/" class="logo">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M2.5 9c2.5 0 2.5 4.2 5 4.2S10 9 12 9s2.5 4.2 5 4.2S19.5 9 21.5 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M2.5 15c2.5 0 2.5 4.2 5 4.2S10 15 12 15s2.5 4.2 5 4.2S19.5 15 21.5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.5"/></svg>
-            <span>درسیو</span>
-        </a>
+    <div class="auth-bg" aria-hidden="true">
+        <span class="auth-orb auth-orb-1"></span>
+        <span class="auth-orb auth-orb-2"></span>
+        <span class="auth-orb auth-orb-3"></span>
+        <div class="auth-mesh"></div>
+        <div class="auth-noise"></div>
+    </div>
 
-        <h1>ورود</h1>
-        <p class="subtitle">به حسابت خوش آمدی</p>
+    <main class="auth-shell">
+        <div class="auth-card">
+            <a href="/" class="auth-brand" data-transition>
+                <span class="logo-mark">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M2.5 9c2.5 0 2.5 4.2 5 4.2S10 9 12 9s2.5 4.2 5 4.2S19.5 9 21.5 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        <path d="M2.5 15c2.5 0 2.5 4.2 5 4.2S10 15 12 15s2.5 4.2 5 4.2S19.5 15 21.5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.5"/>
+                    </svg>
+                </span>
+                <span>درسیو</span>
+            </a>
 
-        <form action="/auth/login/form" method="post">
+            <div class="auth-head">
+                <h1>خوش آمدی 👋</h1>
+                <p>برای ادامه وارد حساب کاربری‌ات شو</p>
+            </div>
+
             {% if error %}
-                <div class="error">{{ error }}</div>
+                <div class="banner" role="alert">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 8v4M12 16h.01"/>
+                    </svg>
+                    <span>{{ error }}</span>
+                </div>
             {% endif %}
 
-            <div class="field">
-                <label for="email">ایمیل</label>
-                <input type="email" id="email" name="email" placeholder="example@email.com" required autocomplete="email">
+            <form class="auth-form" action="/auth/login/form" method="post" id="login-form">
+                <div class="field">
+                    <label for="email">ایمیل</label>
+                    <div class="input-wrap">
+                        <input type="email" id="email" name="email" placeholder="you@example.com"
+                               value="{{ email }}" required autocomplete="email" dir="ltr">
+                        <span class="input-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                                <path d="M3 7l9 6 9-6"/>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="password">رمز عبور</label>
+                    <div class="input-wrap">
+                        <input type="password" id="password" name="password" placeholder="رمز عبور"
+                               required autocomplete="current-password">
+                        <span class="input-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="4" y="10" width="16" height="10" rx="2"/>
+                                <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                            </svg>
+                        </span>
+                        <button type="button" class="toggle-pass" data-toggle-password="password" aria-label="نمایش رمز عبور">
+                            <svg class="eye-on" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
+                                <circle cx="12" cy="12" r="2.5"/>
+                            </svg>
+                            <svg class="eye-off" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M3 3l18 18M10.6 5.1A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.6M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.6 9.6 0 0 0 4.6-1.2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="forgot-row">
+                    <button type="button" class="link-btn" onclick="showAuthToast('بازیابی رمز عبور به‌زودی اضافه می‌شود')">
+                        رمز عبور را فراموش کرده‌ای؟
+                    </button>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    <span class="btn-label">ورود به درسیو</span>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                حساب نداری؟ <a href="/auth/register" data-transition>ساخت حساب</a>
             </div>
-
-            <div class="field">
-                <label for="password">رمز عبور</label>
-                <input type="password" id="password" name="password" placeholder="رمز عبور" required autocomplete="current-password">
-            </div>
-
-            <button type="submit" class="submit">ورود به درسیو</button>
-        </form>
-
-        <div class="switch">
-            حساب نداری؟ <a href="/auth/register">ساخت حساب</a>
+            <a href="/" class="back-link" data-transition>بازگشت به صفحه اصلی</a>
         </div>
-        <a href="/" class="back">بازگشت به صفحه اصلی</a>
-    </div>
+    </main>
+
+    <script src="/static/auth.js"></script>
 </body>
 </html>
