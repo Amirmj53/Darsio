@@ -162,17 +162,20 @@ body {
 }
 
 .auth-card.register-card {
-    max-width: 840px;
-    padding: 28px 40px 24px;
+    max-width: 540px;
+    padding: 22px 32px 18px;
 }
 
-.register-card .auth-brand { margin-bottom: 14px; }
-.register-card .auth-head { margin-bottom: 14px; }
-.register-card .auth-head h1 { margin-bottom: 5px; }
-.register-card .steps { margin-bottom: 16px; }
-.register-card .auth-form { gap: 14px; }
-.register-card .auth-footer { margin-top: 14px; }
-.register-card .back-link { margin-top: 10px; }
+.register-card .auth-brand { margin-bottom: 8px; }
+.register-card .auth-head { margin-bottom: 8px; }
+.register-card .auth-head h1 { margin-bottom: 3px; }
+.register-card .steps { margin-bottom: 10px; }
+.register-card .auth-form { gap: 10px; }
+.register-card .form-grid { gap: 12px 16px; }
+.register-card .auth-footer { margin-top: 10px; }
+.register-card .back-link { margin-top: 6px; }
+.register-card .input-wrap input,
+.register-card .input-wrap select { height: 46px; }
 
 @keyframes authCardIn {
     to { opacity: 1; transform: translateY(0) scale(1); }
@@ -355,10 +358,10 @@ body.page-leave .auth-card {
     color: var(--auth-muted);
 }
 
-/* Multi-column field layout keeps the register form short and wide. */
+/* Two-column field layout keeps the register form short. */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 14px 16px;
 }
 
@@ -376,10 +379,6 @@ body.page-leave .auth-card {
 .legal-note strong {
     color: var(--auth-soft);
     font-weight: 500;
-}
-
-@media (max-width: 760px) {
-    .form-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 540px) {
@@ -532,6 +531,7 @@ body.page-leave .auth-card {
 .steps {
     display: flex;
     align-items: flex-start;
+    justify-content: center;
     gap: 6px;
     margin-bottom: 24px;
     overflow-x: auto;
@@ -772,30 +772,6 @@ body.page-leave .auth-card {
     margin-top: 4px;
     display: flex;
     gap: 8px;
-}
-
-/* On a wide card the three methods sit side by side. */
-@media (min-width: 761px) {
-    .verify-list {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-    }
-    .verify-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 14px;
-        position: relative;
-    }
-    .verify-card .badge,
-    .verify-card .check-badge {
-        position: absolute;
-        top: 13px;
-        left: 13px;
-    }
-    .verify-info .v-title { font-size: 0.88rem; }
-    .verify-info .v-sub { font-size: 0.75rem; }
 }
 
 /* =========================
