@@ -568,6 +568,7 @@ body.page-leave .auth-card {
     pointer-events: auto;
     transition: opacity 0.38s ease, transform 0.38s var(--auth-ease);
 }
+.steps-viewport[data-dir="back"] .step.active { transform: translateX(0); }
 
 /* form rows inside a step */
 .step .auth-form { gap: 15px; }
