@@ -14,7 +14,7 @@ def get_user_conversations(db:Session, user:User) -> list[Conversation]:
         db.query(Conversation)
         .filter( 
             Conversation.user_id == user.id,
-            Conversation.delete_at.is_(None),
+            Conversation.deleted_at.is_(None),
 
         )
         .order_by(
@@ -51,7 +51,7 @@ def delete_conversation(
         select(Conversation).where(
             Conversation.id == conversation_id,
             Conversation.user_id == user.id,
-            Conversation.delete_at.is_(None)
+            Conversation.deleted_at.is_(None)
         )
     )
 
@@ -60,7 +60,7 @@ def delete_conversation(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="مکالمه پیدا نشد."
         )
-    conversation.delete_at = datetime.now(timezone.utc)
+    conversation.deleted_at = datetime.now(timezone.utc)
     db.commit()
 
 def restore_conversation(db:Session, user:User, conversation_id:int) -> Conversation:
@@ -68,14 +68,14 @@ def restore_conversation(db:Session, user:User, conversation_id:int) -> Conversa
         select(Conversation).where(
             Conversation.id == conversation_id,
             Conversation.user_id == user.id,
-            Conversation.delete_at.is_not(None)
+            Conversation.deleted_at.is_not(None)
         )
     )
 
     if not conversation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="مکالمه پیدا نشد")
 
-    conversation.delete_at = None,
+    conversation.deleted_at = None
     conversation.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(conversation)
@@ -89,10 +89,8 @@ def get_conversation(
 ) -> Conversation:
     conversation = db.scalar(
         select(Conversation).where(
-            or_(
                 Conversation.id == conversation_id,
                 Conversation.user_id == user.id
-            )
         )
     )
 
@@ -183,7 +181,7 @@ def search_conversations(db: Session, user: User, query: str) -> list[Conversati
         db.query(Conversation)
         .filter(
             Conversation.user_id == user.id,
-            Conversation.delete_at.is_(None),
+            Conversation.deleted_at.is_(None),
             Conversation.title.ilike(f"%{query}%")
         )
         .order_by(

@@ -45,7 +45,7 @@ class Conversation(Base):
         nullable=False
     )
 
-    delete_at:Mapped[datetime | None] = mapped_column(
+    deleted_at:Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
         default=None

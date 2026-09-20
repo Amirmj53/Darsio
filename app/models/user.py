@@ -27,6 +27,16 @@ class User(Base):
         nullable=False
     )
 
+    display_name:Mapped[str] = mapped_column(
+        String(80),
+        nullable=True
+    )
+
+    avatar_path:Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True
+    )
+
     email: Mapped[str] = mapped_column(
         String(255),
         unique=True,
@@ -47,6 +57,12 @@ class User(Base):
 
     is_verified: Mapped[bool] = mapped_column(
         Boolean,
+        default=False,
+        nullable=False
+    )
+
+    is_admin: Mapped[bool] = mapped_column(
+        Boolean, 
         default=False,
         nullable=False
     )

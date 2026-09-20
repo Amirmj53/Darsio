@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-
+from pathlib import Path
 from .database import Base, engine
-from app.routers import documents, pages, auth, chat
+from app.routers import documents, pages, auth, chat, users
 
 from app.models import Document, User
 from app.services.auth import hash_password, verify_password
@@ -25,6 +25,9 @@ app.mount(
 )
 
 
+Path("uploads/avatars").mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -35,6 +38,9 @@ app.include_router(documents.router)
 app.include_router(pages.router)
 app.include_router(auth.router)
 app.include_router(chat.router)
+app.include_router(users.router)
+
+
 
 
 
