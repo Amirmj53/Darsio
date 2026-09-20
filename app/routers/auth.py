@@ -28,6 +28,7 @@ from app.services.auth import (
     login_user,
     logout_user,
 )
+from app.validation import first_friendly_error
 
 
 templates = Jinja2Templates(
@@ -107,34 +108,50 @@ def login(
 @router.post("/register/form")
 def register_form(
     request: Request,
+    first_name: str = Form(""),
+    last_name: str = Form(""),
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
+    education_level: str = Form(""),
+    field_of_study: str = Form(""),
+    activity_field: str = Form(""),
+    allow_data_usage: str = Form(""),
     db: Session = Depends(get_db),
 ):
+    form_data = {
+        "first_name": first_name,
+        "last_name": last_name,
+        "username": username,
+        "email": email,
+        "education_level": education_level,
+        "field_of_study": field_of_study,
+        "activity_field": activity_field,
+        "allow_data_usage": allow_data_usage in ("1", "true", "on", "yes"),
+    }
+
     try:
         user_data = UserCreate(
+            first_name=first_name,
+            last_name=last_name,
             username=username,
             email=email,
             password=password,
+            education_level=education_level,
+            field_of_study=field_of_study,
+            activity_field=activity_field,
+            allow_data_usage=form_data["allow_data_usage"],
         )
 
-    except ValidationError:
-        request.session["auth_error"] = (
-            "اطلاعات وارد شده معتبر نیست."
-        )
-
-        request.session["register_form"] = {
-            "username": username,
-            "email": email,
-        }
+    except ValidationError as exc:
+        request.session["auth_error"] = first_friendly_error(exc.errors())
+        request.session["register_form"] = form_data
 
         return RedirectResponse(
             url="/auth/register",
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
-    
     try:
         user = create_user(
             db,
@@ -143,11 +160,7 @@ def register_form(
 
     except ValueError as exc:
         request.session["auth_error"] = str(exc)
-
-        request.session["register_form"] = {
-            "username": username,
-            "email": email,
-        }
+        request.session["register_form"] = form_data
 
         return RedirectResponse(
             url="/auth/register",
@@ -205,6 +218,7 @@ def login_form(
         request.session["auth_error"] = (
             "ایمیل یا رمز عبور اشتباه است."
         )
+        request.session["login_email"] = email
 
         return RedirectResponse(
             url = "/auth/login",
@@ -264,13 +278,14 @@ def login_page(
 ):
 
     error = request.session.pop("auth_error", None)
+    email = request.session.pop("login_email", "")
 
-    
     return templates.TemplateResponse(
         request=request,
         name="login.html",
         context={
-            "error" : error,
+            "error": error,
+            "email": email,
         },
     )
 

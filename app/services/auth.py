@@ -69,21 +69,29 @@ def create_user(
         db:Session,
         user_data : UserCreate
 ):
+    username = user_data.username
+    email = str(user_data.email)
 
+    if get_user_by_email(db, email) is not None:
+        raise ValueError("این ایمیل قبلاً ثبت شده است.")
 
-    if user_exists(
-        db, user_data.username, str(user_data.email)
-    ):
-        raise ValueError(
-            "Username or email already exists."
-        )
-    
-        
-    
+    if get_user_by_username(db, username) is not None:
+        raise ValueError("این یوزرنیم قبلاً گرفته شده است.")
+
+    first_name = user_data.first_name.strip()
+    last_name = user_data.last_name.strip()
+
     user = User(
-        username = user_data.username,
-        email = str(user_data.email),
-        password_hash = hash_password(
+        username=username,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        display_name=f"{first_name} {last_name}".strip(),
+        education_level=user_data.education_level,
+        field_of_study=user_data.field_of_study,
+        activity_field=user_data.activity_field,
+        allow_data_usage=user_data.allow_data_usage,
+        password_hash=hash_password(
             user_data.password
         )
     )
@@ -98,7 +106,7 @@ def create_user(
         db.rollback()
 
         raise ValueError(
-            "Username or email already exists."
+            "ایمیل یا یوزرنیم قبلاً استفاده شده است."
         )
 
 

@@ -27,7 +27,17 @@ class User(Base):
         nullable=False
     )
 
-    display_name:Mapped[str] = mapped_column(
+    first_name: Mapped[str | None] = mapped_column(
+        String(80),
+        nullable=True
+    )
+
+    last_name: Mapped[str | None] = mapped_column(
+        String(80),
+        nullable=True
+    )
+
+    display_name:Mapped[str | None] = mapped_column(
         String(80),
         nullable=True
     )
@@ -35,6 +45,27 @@ class User(Base):
     avatar_path:Mapped[str | None] = mapped_column(
         String(255),
         nullable=True
+    )
+
+    education_level: Mapped[str | None] = mapped_column(
+        String(80),
+        nullable=True
+    )
+
+    field_of_study: Mapped[str | None] = mapped_column(
+        String(120),
+        nullable=True
+    )
+
+    activity_field: Mapped[str | None] = mapped_column(
+        String(120),
+        nullable=True
+    )
+
+    allow_data_usage: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False
     )
 
     email: Mapped[str] = mapped_column(

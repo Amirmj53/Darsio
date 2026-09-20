@@ -5,6 +5,8 @@ from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from sqlalchemy.exc import IntegrityError
+
 from app.models.user import User
 from app.schemas.user import ProfileUpdate, PasswordChange
 from app.services.auth import hash_password, verify_password
@@ -27,8 +29,15 @@ def serialize_profile(user: User) -> dict:
         "id": user.id,
         "username": user.username,
         "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "display_name": user.display_name,
         "avatar_url": _avatar_url(user),
+        "education_level": user.education_level,
+        "field_of_study": user.field_of_study,
+        "activity_field": user.activity_field,
+        "allow_data_usage": user.allow_data_usage,
+        "is_verified": user.is_verified,
         "is_admin": user.is_admin,
         "created_at": user.created_at,
     }
@@ -39,10 +48,18 @@ def get_profile(user: User) -> dict:
 
 
 def update_profile(db: Session, user: User, data: ProfileUpdate) -> User:
-    if data.username is not None and data.username != user.username:
+    fields = data.model_fields_set
+
+    if "username" in fields and data.username is not None and data.username != user.username:
+        username = data.username.strip()
+        if not username:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="یوزرنیم نمی‌تواند خالی باشد",
+            )
         exists = db.scalar(
             select(User).where(
-                User.username == data.username,
+                User.username == username,
                 User.id != user.id,
             )
         )
@@ -51,14 +68,58 @@ def update_profile(db: Session, user: User, data: ProfileUpdate) -> User:
                 status_code=status.HTTP_409_CONFLICT,
                 detail="این یوزرنیم قبلاً استفاده شده است",
             )
-        user.username = data.username
+        user.username = username
 
-    if data.display_name is not None:
-        user.display_name = data.display_name.strip() or None
+    if "email" in fields and data.email is not None:
+        email = str(data.email).strip().lower()
+        if email != user.email:
+            if not email:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="لطفاً یک ایمیل معتبر وارد کنید",
+                )
+            exists = db.scalar(
+                select(User).where(
+                    User.email == email,
+                    User.id != user.id,
+                )
+            )
+            if exists:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="این ایمیل قبلاً ثبت شده است",
+                )
+            user.email = email
+            # Email changed: it is no longer considered verified.
+            user.is_verified = False
 
+    if "display_name" in fields:
+        user.display_name = data.display_name.strip() if data.display_name else None
 
+    if "first_name" in fields:
+        user.first_name = data.first_name.strip() if data.first_name else None
+    if "last_name" in fields:
+        user.last_name = data.last_name.strip() if data.last_name else None
 
-    db.commit()
+    if "education_level" in fields:
+        user.education_level = data.education_level.strip() if data.education_level else None
+    if "field_of_study" in fields:
+        user.field_of_study = data.field_of_study.strip() if data.field_of_study else None
+    if "activity_field" in fields:
+        user.activity_field = data.activity_field.strip() if data.activity_field else None
+
+    if "allow_data_usage" in fields and data.allow_data_usage is not None:
+        user.allow_data_usage = bool(data.allow_data_usage)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="ایمیل یا یوزرنیم قبلاً استفاده شده است",
+        )
+
     db.refresh(user)
     return user
 
