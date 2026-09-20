@@ -1008,6 +1008,86 @@
             cursor: not-allowed;
             background: rgba(255, 255, 255, 0.02);
         }
+        .settings-form select {
+            height: 46px;
+            padding: 0 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(8, 10, 18, 0.65);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.93rem;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .settings-form select:hover {
+            border-color: rgba(255, 255, 255, 0.14);
+            background: rgba(10, 12, 20, 0.8);
+        }
+        .settings-form select:focus {
+            border-color: rgba(129, 140, 248, 0.55);
+            background: rgba(10, 12, 22, 0.9);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.12), 0 0 24px rgba(129, 140, 248, 0.08);
+        }
+        .settings-form select option { background: #12141c; color: var(--text); }
+
+        .settings-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .privacy-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 13px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .privacy-row .privacy-text {
+            font-size: 0.84rem;
+            color: #a1a8b8;
+            line-height: 1.55;
+        }
+        .privacy-row .privacy-text strong { color: var(--text); }
+
+        .switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch .track {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .switch .track::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .switch input:checked + .track {
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+        }
+        .switch input:checked + .track::before {
+            transform: translateX(-20px);
+        }
+
+        @media (max-width: 560px) {
+            .settings-grid-2 { grid-template-columns: 1fr; }
+        }
 
         .field-hint {
             font-size: 0.78rem;
@@ -1275,6 +1355,16 @@
                         </div>
 
                         <form id="profile-form" class="settings-form">
+                            <div class="settings-grid-2">
+                                <label>
+                                    <span>نام</span>
+                                    <input type="text" id="input-first-name" maxlength="80" placeholder="مثلاً امیر">
+                                </label>
+                                <label>
+                                    <span>نام خانوادگی</span>
+                                    <input type="text" id="input-last-name" maxlength="80" placeholder="مثلاً محمدی">
+                                </label>
+                            </div>
                             <label>
                                 <span>نام نمایشی</span>
                                 <input type="text" id="input-display-name" maxlength="80" placeholder="مثلاً امیر">
@@ -1285,9 +1375,42 @@
                             </label>
                             <label>
                                 <span>ایمیل</span>
-                                <input type="email" id="input-email" disabled dir="ltr">
+                                <input type="email" id="input-email" dir="ltr" placeholder="you@example.com">
                             </label>
-                            <p class="field-hint">تغییر و تأیید ایمیل بعداً اضافه می‌شود</p>
+                            <p class="field-hint">در صورت تغییر ایمیل، حساب باید دوباره تأیید شود</p>
+
+                            <div class="settings-grid-2">
+                                <label>
+                                    <span>مقطع تحصیلی</span>
+                                    <select id="input-education-level">
+                                        <option value="">انتخاب کنید</option>
+                                        <option value="دبیرستان">دبیرستان</option>
+                                        <option value="کاردانی">کاردانی</option>
+                                        <option value="کارشناسی">کارشناسی</option>
+                                        <option value="کارشناسی ارشد">کارشناسی ارشد</option>
+                                        <option value="دکتری">دکتری</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <span>رشته تحصیلی</span>
+                                    <input type="text" id="input-field-of-study" maxlength="120" placeholder="مثلاً مهندسی کامپیوتر">
+                                </label>
+                            </div>
+                            <label>
+                                <span>زمینه فعالیت / علاقه</span>
+                                <input type="text" id="input-activity-field" maxlength="120" placeholder="مثلاً کنکور، برنامه‌نویسی، پزشکی">
+                            </label>
+
+                            <div class="privacy-row">
+                                <span class="privacy-text">
+                                    به <strong>درسیو</strong> اجازه می‌دهم از اطلاعات تحصیلی من برای بهبود تجربه و عملکرد سامانه استفاده کند.
+                                </span>
+                                <span class="switch">
+                                    <input type="checkbox" id="input-allow-data">
+                                    <span class="track"></span>
+                                </span>
+                            </div>
+
                             <div class="form-actions">
                                 <button type="submit" class="btn-primary">ذخیره تغییرات</button>
                             </div>
@@ -1939,20 +2062,34 @@
         function applyProfileToUI(profile) {
             currentProfile = profile;
 
-            const label = profile.display_name || profile.username;
+            const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(" ");
+            const label = profile.display_name || fullName || profile.username;
             if (userDisplayName) userDisplayName.textContent = label;
             if (userUsername) userUsername.textContent = "@" + profile.username;
 
             setAvatarElement(userAvatar, profile);
             setAvatarElement(document.getElementById("settings-avatar"), profile);
 
-            const inputDisplay = document.getElementById("input-display-name");
-            const inputUsername = document.getElementById("input-username");
-            const inputEmail = document.getElementById("input-email");
+            const byId = (id) => document.getElementById(id);
+            const inputFirst = byId("input-first-name");
+            const inputLast = byId("input-last-name");
+            const inputDisplay = byId("input-display-name");
+            const inputUsername = byId("input-username");
+            const inputEmail = byId("input-email");
+            const inputEducation = byId("input-education-level");
+            const inputField = byId("input-field-of-study");
+            const inputActivity = byId("input-activity-field");
+            const inputAllow = byId("input-allow-data");
 
+            if (inputFirst) inputFirst.value = profile.first_name || "";
+            if (inputLast) inputLast.value = profile.last_name || "";
             if (inputDisplay) inputDisplay.value = profile.display_name || "";
             if (inputUsername) inputUsername.value = profile.username || "";
             if (inputEmail) inputEmail.value = profile.email || "";
+            if (inputEducation) inputEducation.value = profile.education_level || "";
+            if (inputField) inputField.value = profile.field_of_study || "";
+            if (inputActivity) inputActivity.value = profile.activity_field || "";
+            if (inputAllow) inputAllow.checked = !!profile.allow_data_usage;
         }
 
         async function loadProfile() {
@@ -2026,14 +2163,37 @@
                 status.className = "form-status";
             }
 
-            const payload = {};
-            const displayName = document.getElementById("input-display-name")?.value.trim() || "";
-            const username = document.getElementById("input-username")?.value.trim() || "";
+            const val = (id) => (document.getElementById(id)?.value || "").trim();
+            const username = val("input-username");
+            const email = val("input-email");
 
-            if (displayName) payload.display_name = displayName;
-            else payload.display_name = null;
+            if (!/^[a-zA-Z0-9_.-]{3,30}$/.test(username)) {
+                if (status) {
+                    status.textContent = "یوزرنیم باید ۳ تا ۳۰ کاراکتر و فقط شامل حروف انگلیسی، عدد، _ ، . یا - باشد";
+                    status.classList.add("err");
+                }
+                return;
+            }
 
-            if (username) payload.username = username;
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                if (status) {
+                    status.textContent = "لطفاً یک ایمیل معتبر وارد کنید";
+                    status.classList.add("err");
+                }
+                return;
+            }
+
+            const payload = {
+                first_name: val("input-first-name") || null,
+                last_name: val("input-last-name") || null,
+                display_name: val("input-display-name") || null,
+                username,
+                email,
+                education_level: val("input-education-level") || null,
+                field_of_study: val("input-field-of-study") || null,
+                activity_field: val("input-activity-field") || null,
+                allow_data_usage: document.getElementById("input-allow-data")?.checked || false
+            };
 
             try {
                 const res = await fetch("/users/me", {
