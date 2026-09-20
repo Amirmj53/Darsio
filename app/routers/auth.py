@@ -199,14 +199,12 @@ def login_form(
         )
 
     except ValidationError as exc:
-            request.session["auth_error"] = (
-                "اطلاعات وارد شده معتبر نیست."
-            )
-    
-            return RedirectResponse(
-                url="/auth/login",
-                status_code=status.HTTP_303_SEE_OTHER
-            )
+        request.session["auth_error"] = first_friendly_error(exc.errors())
+
+        return RedirectResponse(
+            url="/auth/login",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
 
     user = authenticate_user(
         db,
@@ -216,7 +214,7 @@ def login_form(
 
     if user is None:
         request.session["auth_error"] = (
-            "ایمیل یا رمز عبور اشتباه است."
+            "ایمیل یا رمزت اشتباهه."
         )
         request.session["login_email"] = email
 

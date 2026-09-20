@@ -24,29 +24,29 @@ def _render(field: str | None, error_type: str, message: str) -> str:
     label = FIELD_LABELS.get(field or "", field or "فیلد")
 
     if field == "email":
-        return "لطفاً یک ایمیل معتبر وارد کنید."
+        return "یه ایمیل معتبر وارد کن."
 
     if field == "password":
-        return "رمز عبور باید حداقل ۸ کاراکتر و شامل حرف و عدد باشد."
+        return "رمزت باید حداقل ۸ کاراکتر و شامل حرف و عدد باشه."
 
     if field == "username":
         return (
             "یوزرنیم باید ۳ تا ۳۰ کاراکتر و فقط شامل "
-            "حروف انگلیسی، عدد، _ ، . یا - باشد."
+            "حروف انگلیسی، عدد، _ ، . یا - باشه."
         )
 
     if field in ("first_name", "last_name"):
         if error_type in ("missing", "string_too_short", "value_error"):
-            return f"{label} الزامی است."
+            return f"{label} رو وارد کن."
         if error_type == "string_too_long":
-            return f"{label} خیلی طولانی است."
+            return f"{label} خیلی طولانیه."
 
     if error_type == "missing":
-        return f"{label} الزامی است."
+        return f"{label} رو وارد کن."
     if error_type == "string_too_short":
-        return f"{label} خیلی کوتاه است."
+        return f"{label} خیلی کوتاهه."
     if error_type == "string_too_long":
-        return f"{label} خیلی طولانی است."
+        return f"{label} خیلی طولانیه."
 
     return message
 
@@ -54,7 +54,7 @@ def _render(field: str | None, error_type: str, message: str) -> str:
 def first_friendly_error(errors: list[dict[str, Any]]) -> str:
     """Return the first error as a short, user-facing Persian message."""
     if not errors:
-        return "اطلاعات وارد شده معتبر نیست."
+        return "اطلاعات واردشده معتبر نیست."
 
     err = errors[0]
     loc = err.get("loc", [])

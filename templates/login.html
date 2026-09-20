@@ -30,8 +30,8 @@
             </a>
 
             <div class="auth-head">
-                <h1>خوش آمدی 👋</h1>
-                <p>برای ادامه وارد حساب کاربری‌ات شو</p>
+                <h1>خوش برگشتی</h1>
+                <p>وارد حسابت شو و از همون‌جایی که موندی ادامه بده</p>
             </div>
 
             {% if error %}
@@ -62,7 +62,7 @@
                 <div class="field">
                     <label for="password">رمز عبور</label>
                     <div class="input-wrap">
-                        <input type="password" id="password" name="password" placeholder="رمز عبور"
+                        <input type="password" id="password" name="password" placeholder="رمزت رو وارد کن"
                                required autocomplete="current-password">
                         <span class="input-icon">
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -83,18 +83,18 @@
                 </div>
 
                 <div class="forgot-row">
-                    <button type="button" class="link-btn" onclick="showAuthToast('بازیابی رمز عبور به‌زودی اضافه می‌شود')">
-                        رمز عبور را فراموش کرده‌ای؟
+                    <button type="button" class="link-btn" onclick="showAuthToast('بازیابی رمز عبور به‌زودی اضافه می‌شود.')">
+                        رمزت رو فراموش کرده‌ای؟
                     </button>
                 </div>
 
                 <button type="submit" class="btn-primary">
-                    <span class="btn-label">ورود به درسیو</span>
+                    <span class="btn-label">ورود به حساب</span>
                 </button>
             </form>
 
             <div class="auth-footer">
-                حساب نداری؟ <a href="/auth/register" data-transition>ساخت حساب</a>
+                هنوز حساب نساختی؟ <a href="/auth/register" data-transition>ساخت حساب</a>
             </div>
             <a href="/" class="back-link" data-transition>بازگشت به صفحه اصلی</a>
         </div>

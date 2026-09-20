@@ -55,7 +55,7 @@ def update_profile(db: Session, user: User, data: ProfileUpdate) -> User:
         if not username:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="یوزرنیم نمی‌تواند خالی باشد",
+                detail="یوزرنیم نمی‌تونه خالی باشه.",
             )
         exists = db.scalar(
             select(User).where(
@@ -66,7 +66,7 @@ def update_profile(db: Session, user: User, data: ProfileUpdate) -> User:
         if exists:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="این یوزرنیم قبلاً استفاده شده است",
+                detail="این یوزرنیم قبلاً گرفته شده.",
             )
         user.username = username
 
@@ -76,7 +76,7 @@ def update_profile(db: Session, user: User, data: ProfileUpdate) -> User:
             if not email:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="لطفاً یک ایمیل معتبر وارد کنید",
+                    detail="یه ایمیل معتبر وارد کن.",
                 )
             exists = db.scalar(
                 select(User).where(
@@ -87,7 +87,7 @@ def update_profile(db: Session, user: User, data: ProfileUpdate) -> User:
             if exists:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail="این ایمیل قبلاً ثبت شده است",
+                    detail="این ایمیل قبلاً ثبت شده.",
                 )
             user.email = email
             # Email changed: it is no longer considered verified.
@@ -117,7 +117,7 @@ def update_profile(db: Session, user: User, data: ProfileUpdate) -> User:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="ایمیل یا یوزرنیم قبلاً استفاده شده است",
+            detail="ایمیل یا یوزرنیم قبلاً استفاده شده.",
         )
 
     db.refresh(user)
@@ -128,12 +128,12 @@ def change_password(db: Session, user: User, data: PasswordChange) -> None:
     if not verify_password(data.current_password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="رمز عبور فعلی اشتباه است",
+            detail="رمز فعلی‌ات اشتباهه.",
         )
     if data.current_password == data.new_password:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="رمز جدید باید با رمز فعلی متفاوت باشد",
+            detail="رمز جدیدت باید با رمز فعلی فرق داشته باشه.",
         )
     user.password_hash = hash_password(data.new_password)
     db.commit()
@@ -143,14 +143,14 @@ def update_avatar(db: Session, user: User, file: UploadFile) -> User:
     if file.content_type not in ALLOWED_AVATAR_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="فقط تصویر JPG، PNG یا WEBP مجاز است",
+            detail="فقط تصویر JPG، PNG یا WEBP می‌تونی آپلود کنی.",
         )
 
     content = file.file.read()
     if len(content) > MAX_AVATAR_SIZE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="حجم تصویر حداکثر ۲ مگابایت باشد",
+            detail="حجم تصویر باید حداکثر ۲ مگابایت باشه.",
         )
 
     ext = {

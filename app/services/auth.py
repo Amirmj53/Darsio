@@ -73,10 +73,10 @@ def create_user(
     email = str(user_data.email)
 
     if get_user_by_email(db, email) is not None:
-        raise ValueError("این ایمیل قبلاً ثبت شده است.")
+        raise ValueError("این ایمیل قبلاً ثبت شده.")
 
     if get_user_by_username(db, username) is not None:
-        raise ValueError("این یوزرنیم قبلاً گرفته شده است.")
+        raise ValueError("این یوزرنیم قبلاً گرفته شده.")
 
     first_name = user_data.first_name.strip()
     last_name = user_data.last_name.strip()
@@ -106,7 +106,7 @@ def create_user(
         db.rollback()
 
         raise ValueError(
-            "ایمیل یا یوزرنیم قبلاً استفاده شده است."
+            "ایمیل یا یوزرنیم قبلاً استفاده شده."
         )
 
 

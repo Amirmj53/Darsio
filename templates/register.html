@@ -8,17 +8,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/auth.css">
     <style>
-        /* Password strength (register-specific) */
-        .strength { margin-top: 8px; }
-        .strength-head {
+        .label-row {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            font-size: 0.78rem;
+            gap: 8px;
+        }
+        .strength-text {
+            font-size: 0.74rem;
+            font-weight: 500;
             color: var(--auth-muted);
-            margin-bottom: 6px;
         }
         .strength-bar {
-            height: 4px;
+            margin-top: -3px;
+            height: 3px;
             background: rgba(255, 255, 255, 0.08);
             border-radius: 99px;
             overflow: hidden;
@@ -33,9 +36,6 @@
         .strength-fill.w2 { width: 50%; background: #fbbf24; }
         .strength-fill.w3 { width: 75%; background: #a5b4fc; }
         .strength-fill.w4 { width: 100%; background: #4ade80; }
-
-        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 460px) { .two-col { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -61,7 +61,7 @@
 
             <div class="auth-head">
                 <h1>ساخت حساب</h1>
-                <p>شروع مطالعه هوشمند در چند قدم ساده</p>
+                <p>در چند قدم ساده حسابت رو بساز و شروع کن</p>
             </div>
 
             {% if error %}
@@ -74,13 +74,12 @@
                 </div>
             {% endif %}
 
-            <!-- Progress indicator -->
-            <div class="steps" id="steps" role="tablist" aria-label="مراحل ثبت‌نام">
+            <div class="steps" id="steps" aria-label="مراحل ثبت‌نام">
                 <div class="step-indicator active" data-step="1">
                     <span class="step-dot" id="dot-1">1</span>
                     <span class="step-meta">
                         <span class="step-title">اطلاعات پایه</span>
-                        <span class="step-sub">حساب کاربری</span>
+                        <span class="step-sub">حسابت رو بساز</span>
                     </span>
                 </div>
                 <span class="step-line" id="line-1"></span>
@@ -88,7 +87,7 @@
                     <span class="step-dot" id="dot-2">2</span>
                     <span class="step-meta">
                         <span class="step-title">تحصیلات</span>
-                        <span class="step-sub">اختیاری</span>
+                        <span class="step-sub">اختیاری، ولی مفید</span>
                     </span>
                 </div>
                 <span class="step-line" id="line-2"></span>
@@ -96,7 +95,7 @@
                     <span class="step-dot" id="dot-3">3</span>
                     <span class="step-meta">
                         <span class="step-title">تأیید</span>
-                        <span class="step-sub">پایان ثبت‌نام</span>
+                        <span class="step-sub">یه قدم تا شروع</span>
                     </span>
                 </div>
             </div>
@@ -107,93 +106,91 @@
                     <!-- Step 1 — Basic information -->
                     <section class="step active" data-step="1">
                         <div class="auth-form">
-                            <div class="two-col">
+                            <div class="form-grid">
                                 <div class="field" data-field="first_name">
                                     <label for="first_name">نام</label>
                                     <div class="input-wrap">
                                         <input type="text" id="first_name" name="first_name" placeholder="مثلاً علی"
                                                value="{{ form_data.get('first_name', '') }}" autocomplete="given-name">
                                     </div>
-                                    <p class="field-error">نام الزامی است.</p>
+                                    <p class="field-error">نامت رو وارد کن.</p>
                                 </div>
+
                                 <div class="field" data-field="last_name">
                                     <label for="last_name">نام خانوادگی</label>
                                     <div class="input-wrap">
                                         <input type="text" id="last_name" name="last_name" placeholder="مثلاً محمدی"
                                                value="{{ form_data.get('last_name', '') }}" autocomplete="family-name">
                                     </div>
-                                    <p class="field-error">نام خانوادگی الزامی است.</p>
+                                    <p class="field-error">نام خانوادگی‌ات رو وارد کن.</p>
                                 </div>
-                            </div>
 
-                            <div class="field" data-field="username">
-                                <label for="username">یوزرنیم</label>
-                                <div class="input-wrap">
-                                    <input type="text" id="username" name="username" placeholder="your_username"
-                                           value="{{ form_data.get('username', '') }}" dir="ltr" autocomplete="username">
-                                    <span class="input-icon">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                            <circle cx="12" cy="8" r="4"/>
-                                            <path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>
-                                        </svg>
-                                    </span>
+                                <div class="field" data-field="username">
+                                    <label for="username">یوزرنیم</label>
+                                    <div class="input-wrap">
+                                        <input type="text" id="username" name="username" placeholder="your_username"
+                                               value="{{ form_data.get('username', '') }}" dir="ltr" autocomplete="username">
+                                        <span class="input-icon">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                                <circle cx="12" cy="8" r="4"/>
+                                                <path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <p class="field-error">یوزرنیم باید ۳ تا ۳۰ کاراکتر و فقط شامل حروف انگلیسی، عدد، _ ، . یا - باشه.</p>
                                 </div>
-                                <p class="field-error">یوزرنیم باید ۳ تا ۳۰ کاراکتر و فقط شامل حروف انگلیسی، عدد، _ ، . یا - باشد.</p>
-                            </div>
 
-                            <div class="field" data-field="email">
-                                <label for="email">ایمیل</label>
-                                <div class="input-wrap">
-                                    <input type="email" id="email" name="email" placeholder="you@example.com"
-                                           value="{{ form_data.get('email', '') }}" dir="ltr" autocomplete="email">
-                                    <span class="input-icon">
-                                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                            <rect x="3" y="5" width="18" height="14" rx="2"/>
-                                            <path d="M3 7l9 6 9-6"/>
-                                        </svg>
-                                    </span>
+                                <div class="field" data-field="email">
+                                    <label for="email">ایمیل</label>
+                                    <div class="input-wrap">
+                                        <input type="email" id="email" name="email" placeholder="you@example.com"
+                                               value="{{ form_data.get('email', '') }}" dir="ltr" autocomplete="email">
+                                        <span class="input-icon">
+                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                                                <path d="M3 7l9 6 9-6"/>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <p class="field-error">یه ایمیل معتبر وارد کن.</p>
                                 </div>
-                                <p class="field-error">لطفاً یک ایمیل معتبر وارد کنید.</p>
-                            </div>
 
-                            <div class="field" data-field="password">
-                                <label for="password">رمز عبور</label>
-                                <div class="input-wrap">
-                                    <input type="password" id="password" name="password" placeholder="حداقل ۸ کاراکتر"
-                                           autocomplete="new-password">
-                                    <span class="input-icon">
-                                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                            <rect x="4" y="10" width="16" height="10" rx="2"/>
-                                            <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
-                                        </svg>
-                                    </span>
-                                    <button type="button" class="toggle-pass" data-toggle-password="password" aria-label="نمایش رمز عبور">
-                                        <svg class="eye-on" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
-                                            <circle cx="12" cy="12" r="2.5"/>
-                                        </svg>
-                                        <svg class="eye-off" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                            <path d="M3 3l18 18M10.6 5.1A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.6M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.6 9.6 0 0 0 4.6-1.2"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="strength">
-                                    <div class="strength-head">
-                                        <span>قدرت رمز عبور</span>
-                                        <span id="strength-text">—</span>
+                                <div class="field" data-field="password">
+                                    <label class="label-row" for="password">
+                                        <span>رمز عبور</span>
+                                        <span class="strength-text" id="strength-text">—</span>
+                                    </label>
+                                    <div class="input-wrap">
+                                        <input type="password" id="password" name="password" placeholder="حداقل ۸ کاراکتر"
+                                               autocomplete="new-password">
+                                        <span class="input-icon">
+                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                                <rect x="4" y="10" width="16" height="10" rx="2"/>
+                                                <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                                            </svg>
+                                        </span>
+                                        <button type="button" class="toggle-pass" data-toggle-password="password" aria-label="نمایش رمز عبور">
+                                            <svg class="eye-on" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
+                                                <circle cx="12" cy="12" r="2.5"/>
+                                            </svg>
+                                            <svg class="eye-off" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                                <path d="M3 3l18 18M10.6 5.1A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.6M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.6 9.6 0 0 0 4.6-1.2"/>
+                                            </svg>
+                                        </button>
                                     </div>
                                     <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+                                    <p class="field-error">رمزت باید حداقل ۸ کاراکتر و شامل حرف و عدد باشه.</p>
                                 </div>
-                                <p class="field-error">رمز عبور باید حداقل ۸ کاراکتر و شامل حرف و عدد باشد.</p>
-                            </div>
 
-                            <div class="field" data-field="password2">
-                                <label for="password2">تکرار رمز عبور</label>
-                                <div class="input-wrap">
-                                    <input type="password" id="password2" name="password2" placeholder="تکرار رمز عبور"
-                                           autocomplete="new-password">
+                                <div class="field" data-field="password2">
+                                    <label for="password2">تکرار رمز عبور</label>
+                                    <div class="input-wrap">
+                                        <input type="password" id="password2" name="password2" placeholder="دوباره واردش کن"
+                                               autocomplete="new-password">
+                                    </div>
+                                    <p class="field-error">تکرار رمزت با رمز اصلی یکی نیست.</p>
                                 </div>
-                                <p class="field-error">تکرار رمز عبور مطابقت ندارد.</p>
                             </div>
 
                             <div class="step-actions">
@@ -210,39 +207,41 @@
                     <!-- Step 2 — Education -->
                     <section class="step" data-step="2">
                         <div class="auth-form">
-                            <div class="field">
-                                <label for="education_level">مقطع تحصیلی <span class="hint">(اختیاری)</span></label>
-                                <div class="input-wrap">
-                                    <select id="education_level" name="education_level">
-                                        <option value="">انتخاب کنید</option>
-                                        {% set edu = form_data.get('education_level', '') %}
-                                        <option value="دبیرستان" {% if edu == 'دبیرستان' %}selected{% endif %}>دبیرستان</option>
-                                        <option value="کاردانی" {% if edu == 'کاردانی' %}selected{% endif %}>کاردانی</option>
-                                        <option value="کارشناسی" {% if edu == 'کارشناسی' %}selected{% endif %}>کارشناسی</option>
-                                        <option value="کارشناسی ارشد" {% if edu == 'کارشناسی ارشد' %}selected{% endif %}>کارشناسی ارشد</option>
-                                        <option value="دکتری" {% if edu == 'دکتری' %}selected{% endif %}>دکتری</option>
-                                    </select>
-                                    <span class="select-chevron">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M6 9l6 6 6-6"/>
-                                        </svg>
-                                    </span>
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label for="education_level">مقطع تحصیلی <span class="hint-inline">اختیاری</span></label>
+                                    <div class="input-wrap">
+                                        <select id="education_level" name="education_level">
+                                            <option value="">انتخاب کن</option>
+                                            {% set edu = form_data.get('education_level', '') %}
+                                            <option value="دبیرستان" {% if edu == 'دبیرستان' %}selected{% endif %}>دبیرستان</option>
+                                            <option value="کاردانی" {% if edu == 'کاردانی' %}selected{% endif %}>کاردانی</option>
+                                            <option value="کارشناسی" {% if edu == 'کارشناسی' %}selected{% endif %}>کارشناسی</option>
+                                            <option value="کارشناسی ارشد" {% if edu == 'کارشناسی ارشد' %}selected{% endif %}>کارشناسی ارشد</option>
+                                            <option value="دکتری" {% if edu == 'دکتری' %}selected{% endif %}>دکتری</option>
+                                        </select>
+                                        <span class="select-chevron">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M6 9l6 6 6-6"/>
+                                            </svg>
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="field">
-                                <label for="field_of_study">رشته تحصیلی <span class="hint">(اختیاری)</span></label>
-                                <div class="input-wrap">
-                                    <input type="text" id="field_of_study" name="field_of_study" placeholder="مثلاً مهندسی کامپیوتر"
-                                           value="{{ form_data.get('field_of_study', '') }}">
+                                <div class="field">
+                                    <label for="field_of_study">رشته تحصیلی <span class="hint-inline">اختیاری</span></label>
+                                    <div class="input-wrap">
+                                        <input type="text" id="field_of_study" name="field_of_study" placeholder="مثلاً مهندسی کامپیوتر"
+                                               value="{{ form_data.get('field_of_study', '') }}">
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="field">
-                                <label for="activity_field">زمینه فعالیت / علاقه <span class="hint">(اختیاری)</span></label>
-                                <div class="input-wrap">
-                                    <input type="text" id="activity_field" name="activity_field" placeholder="مثلاً کنکور، برنامه‌نویسی، پزشکی"
-                                           value="{{ form_data.get('activity_field', '') }}">
+                                <div class="field">
+                                    <label for="activity_field">زمینه فعالیت یا علاقه <span class="hint-inline">اختیاری</span></label>
+                                    <div class="input-wrap">
+                                        <input type="text" id="activity_field" name="activity_field" placeholder="مثلاً کنکور، برنامه‌نویسی، پزشکی"
+                                               value="{{ form_data.get('activity_field', '') }}">
+                                    </div>
                                 </div>
                             </div>
 
@@ -255,7 +254,7 @@
                                     </svg>
                                 </span>
                                 <span class="consent-text">
-                                    به <strong>درسیو</strong> اجازه می‌دهم از اطلاعات تحصیلی من برای بهبود تجربه کاربری و عملکرد سامانه استفاده کند.
+                                    اجازه بده <strong>درسیو</strong> از اطلاعات تحصیلی‌ات برای بهتر شدن تجربه‌ات و عملکرد سامانه استفاده کنه.
                                 </span>
                             </label>
 
@@ -289,7 +288,7 @@
                                     </span>
                                     <div class="verify-info">
                                         <div class="v-title">ایمیل</div>
-                                        <div class="v-sub">روش اصلی تأیید حساب</div>
+                                        <div class="v-sub">راه اصلی تأیید حسابت</div>
                                     </div>
                                     <span class="check-badge">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -307,7 +306,7 @@
                                     </span>
                                     <div class="verify-info">
                                         <div class="v-title">یوزرنیم</div>
-                                        <div class="v-sub">ورود با یوزرنیم</div>
+                                        <div class="v-sub">بعداً با یوزرنیم هم می‌تونی وارد شی</div>
                                     </div>
                                     <span class="badge soon">به‌زودی</span>
                                 </div>
@@ -321,7 +320,7 @@
                                     </span>
                                     <div class="verify-info">
                                         <div class="v-title">شماره موبایل</div>
-                                        <div class="v-sub">تأیید از طریق پیامک</div>
+                                        <div class="v-sub">تأیید با کد پیامکی</div>
                                     </div>
                                     <span class="badge soon">به‌زودی</span>
                                 </div>
@@ -332,7 +331,7 @@
                                     <circle cx="12" cy="12" r="9"/>
                                     <path d="M12 8v4M12 16h.01"/>
                                 </svg>
-                                ارسال کد تأیید (ایمیل / پیامک) به‌زودی فعال می‌شود. فعلاً می‌توانی حساب بسازی و بعداً آن را تأیید کنی.
+                                به‌زودی می‌تونی حسابت رو با ایمیل یا پیامک تأیید کنی. فعلاً حسابت رو بساز و بعداً تأییدش کن.
                             </p>
 
                             <div class="step-actions">
@@ -352,8 +351,12 @@
                 </div>
             </form>
 
+            <p class="legal-note">
+                با ساخت حساب، <strong>قوانین استفاده</strong> و <strong>حریم خصوصی</strong> درسیو را می‌پذیری.
+            </p>
+
             <div class="auth-footer">
-                قبلاً حساب داری؟ <a href="/auth/login" data-transition>ورود</a>
+                قبلاً حساب ساختی؟ <a href="/auth/login" data-transition>وارد شو</a>
             </div>
             <a href="/" class="back-link" data-transition>بازگشت به صفحه اصلی</a>
         </div>
@@ -363,6 +366,11 @@
     <script>
         (function () {
             "use strict";
+
+            var CHECK_ICON =
+                '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" ' +
+                'stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' +
+                '<path d="M20 6L9 17l-5-5"/></svg>';
 
             var currentStep = 1;
             var viewport = document.getElementById("steps-viewport");
@@ -378,7 +386,7 @@
                     return v.length >= 8 && /[a-zA-Z]/.test(v) && /\d/.test(v);
                 },
                 password2: function (v) {
-                    return v === document.getElementById("password").value && v.length > 0;
+                    return v.length > 0 && v === document.getElementById("password").value;
                 }
             };
 
@@ -388,9 +396,13 @@
             }
 
             function validateStep(n) {
-                var names = { 1: ["first_name", "last_name", "username", "email", "password", "password2"], 2: [], 3: [] };
+                var fieldsByStep = {
+                    1: ["first_name", "last_name", "username", "email", "password", "password2"],
+                    2: [],
+                    3: []
+                };
                 var ok = true;
-                names[n].forEach(function (name) {
+                fieldsByStep[n].forEach(function (name) {
                     var input = document.getElementById(name);
                     if (!input) return;
                     var valid = validators[name](input.value);
@@ -405,10 +417,14 @@
                     var stepNum = i + 1;
                     ind.classList.toggle("active", stepNum === currentStep);
                     var dot = document.getElementById("dot-" + stepNum);
-                    if (dot) {
-                        dot.classList.toggle("active", stepNum === currentStep);
-                        dot.classList.toggle("done", stepNum < currentStep);
-                        dot.textContent = stepNum < currentStep ? "✓" : String(stepNum);
+                    if (!dot) return;
+                    var done = stepNum < currentStep;
+                    dot.classList.toggle("active", stepNum === currentStep);
+                    dot.classList.toggle("done", done);
+                    if (done) {
+                        dot.innerHTML = CHECK_ICON;
+                    } else {
+                        dot.textContent = String(stepNum);
                     }
                 });
                 // The line between step i and i+1 fills once we move past step i.
@@ -442,15 +458,14 @@
                 });
             });
 
-            // Live clearing of field errors.
+            // Clear a field's error as soon as it becomes valid again.
             document.querySelectorAll("[data-field] input").forEach(function (input) {
                 input.addEventListener("input", function () {
                     var field = input.closest("[data-field]");
-                    if (field && field.classList.contains("has-error")) {
-                        var name = field.dataset.field;
-                        if (validators[name] && validators[name](input.value)) {
-                            field.classList.remove("has-error");
-                        }
+                    if (!field || !field.classList.contains("has-error")) return;
+                    var name = field.dataset.field;
+                    if (validators[name] && validators[name](input.value)) {
+                        field.classList.remove("has-error");
                     }
                 });
             });
@@ -492,19 +507,18 @@
                 }
             });
 
-            // Final submit: validate every step; jump to first invalid one.
+            // Final submit: validate every step, then jump to the first invalid one.
             var form = document.getElementById("register-form");
             var submitBtn = document.getElementById("submit-btn");
 
             form.addEventListener("submit", function (e) {
-                var stepsValid = [];
-                for (var i = 1; i <= 3; i++) stepsValid.push(validateStep(i));
+                var results = [1, 2, 3].map(validateStep);
 
-                if (stepsValid.some(function (ok) { return !ok; })) {
+                if (results.indexOf(false) !== -1) {
                     e.preventDefault();
-                    var firstInvalid = stepsValid.indexOf(false) + 1;
+                    var firstInvalid = results.indexOf(false) + 1;
                     goToStep(firstInvalid, firstInvalid < currentStep ? "back" : "forward");
-                    showAuthToast("لطفاً موارد مشخص‌شده را اصلاح کن");
+                    showAuthToast("لطفاً موارد مشخص‌شده رو اصلاح کن.");
                     return;
                 }
 
