@@ -29,6 +29,7 @@ class ConversationCreate(BaseModel):
 
 class ConversationResponse(BaseModel):
     id: int
+    public_id : str
     title: str
     created_at: datetime
     updated_at: datetime

@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -32,7 +33,8 @@ def create_conversation(
 ) -> Conversation :
     conversation = Conversation(
         user_id = user.id,
-        title=conversation_data.title or "گفتگوی جدید"
+        title=conversation_data.title or "گفتگوی جدید",
+        public_id = str(uuid.uuid4()),
 
     )
     db.add(conversation)
@@ -63,10 +65,10 @@ def delete_conversation(
     conversation.deleted_at = datetime.now(timezone.utc)
     db.commit()
 
-def restore_conversation(db:Session, user:User, conversation_id:int) -> Conversation:
+def restore_conversation(db:Session, user:User, public_id:str) -> Conversation:
     conversation = db.scalar(
         select(Conversation).where(
-            Conversation.id == conversation_id,
+            Conversation.id == public_id,
             Conversation.user_id == user.id,
             Conversation.deleted_at.is_not(None)
         )
@@ -85,12 +87,13 @@ def restore_conversation(db:Session, user:User, conversation_id:int) -> Conversa
 def get_conversation(
     db:Session,
     user:User,
-    conversation_id:int
+    public_id:str
 ) -> Conversation:
     conversation = db.scalar(
         select(Conversation).where(
-                Conversation.id == conversation_id,
-                Conversation.user_id == user.id
+                Conversation.public_id == public_id,
+                Conversation.user_id == user.id,
+                Conversation.deleted_at.is_(None),
         )
     )
 
@@ -106,9 +109,9 @@ def get_conversation(
 def toggle_pin_conversation(
         db:Session,
         user:User,
-        conversation_id:int
+        public_id:str,
 ) -> Conversation:
-    conversation = get_conversation(db, user, conversation_id)
+    conversation = get_conversation(db, user, public_id)
     conversation.is_pinned = not conversation.is_pinned
     conversation.updated_at = datetime.now(timezone.utc)
     db.commit()
@@ -119,10 +122,10 @@ def toggle_pin_conversation(
 def rename_conversation(
         db:Session,
         user:User,
-        conversation_id:int,
+        public_id:str,
         new_title:str,
 ) -> Conversation:
-    conversation = get_conversation(db, user, conversation_id)
+    conversation = get_conversation(db, user, public_id)
     conversation.title = new_title.strip()[:60]
     conversation.updated_at = datetime.now(timezone.utc)
 
@@ -135,10 +138,10 @@ def rename_conversation(
 def send_message(
     db: Session,
     user: User,
-    conversation_id: int,
+    public_id:str,
     data: MessageCreate
 ) -> Message:
-    conversation = get_conversation(db, user, conversation_id)
+    conversation = get_conversation(db, user, public_id)
 
 
     default_titles = ["گفتگوی جدید", "New Chat", ""]

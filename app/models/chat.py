@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
@@ -15,6 +16,15 @@ class Conversation(Base):
     __tablename__ = "conversations"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+
+    public_id : Mapped[str] = mapped_column(
+        String(36),
+        unique=True,
+        index=True,
+        nullable=False,
+        default=lambda : str(uuid.uuid4())
+    )
+    
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),

@@ -40,6 +40,7 @@ def serialize_profile(user: User) -> dict:
         "is_verified": user.is_verified,
         "is_admin": user.is_admin,
         "created_at": user.created_at,
+        "is_superadmin": getattr(user, "is_superadmin", False),
     }
 
 

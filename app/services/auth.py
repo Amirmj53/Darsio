@@ -91,6 +91,8 @@ def create_user(
         field_of_study=user_data.field_of_study,
         activity_field=user_data.activity_field,
         allow_data_usage=user_data.allow_data_usage,
+        is_admin = False,
+        is_superadmin = False,
         password_hash=hash_password(
             user_data.password
         )

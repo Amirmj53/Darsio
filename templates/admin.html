@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت | درسیو</title>
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #04050c;
+            --sidebar: #06070d;
+            --panel: #0e1018;
+            --surface: rgba(255,255,255,0.045);
+            --surface-hover: rgba(255,255,255,0.07);
+            --border: rgba(255,255,255,0.08);
+            --text: #eef0f6;
+            --muted: #8b92a5;
+            --accent: #818cf8;
+            --danger: #f87171;
+            --success: #4ade80;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Onest", system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .nav {
+            width: 240px;
+            background: var(--sidebar);
+            border-left: 1px solid var(--border);
+            padding: 20px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .brand {
+            font-weight: 600;
+            font-size: 1.05rem;
+            padding: 8px 12px 18px;
+        }
+        .brand span { color: var(--muted); font-weight: 400; font-size: 0.8rem; display: block; margin-top: 4px; }
+        .nav button {
+            text-align: right;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.9rem;
+            padding: 11px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .nav button:hover { background: var(--surface-hover); color: var(--text); }
+        .nav button.active { background: rgba(129,140,248,0.14); color: var(--text); }
+        .nav-foot { margin-top: auto; padding: 12px; }
+        .nav-foot a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+        .nav-foot a:hover { color: var(--text); }
+
+        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .top {
+            height: 60px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+        .top h1 { font-size: 1.05rem; font-weight: 600; }
+        .content { padding: 24px; overflow: auto; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat {
+            background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+        }
+        .stat .label { color: var(--muted); font-size: 0.8rem; margin-bottom: 8px; }
+        .stat .value { font-size: 1.4rem; font-weight: 600; }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .toolbar input {
+            flex: 1;
+            min-width: 200px;
+            height: 42px;
+            border-radius: 11px;
+            border: 1px solid var(--border);
+            background: rgba(8,10,18,0.65);
+            color: var(--text);
+            padding: 0 12px;
+            font-family: inherit;
+            outline: none;
+        }
+        .toolbar input:focus { border-color: rgba(129,140,248,0.5); }
+
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-align: right;
+        }
+        th { color: var(--muted); font-weight: 500; background: rgba(0,0,0,0.2); }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+        .badge.ok { color: var(--success); border-color: rgba(74,222,128,0.3); }
+        .badge.warn { color: var(--danger); border-color: rgba(248,113,113,0.3); }
+        .badge.admin { color: #a5b4fc; border-color: rgba(129,140,248,0.35); }
+
+        .btn {
+            border: none;
+            border-radius: 9px;
+            padding: 7px 12px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background: var(--surface);
+            color: var(--text);
+        }
+        .btn:hover { background: var(--surface-hover); }
+        .btn.danger { color: var(--danger); }
+        .btn.primary {
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+            color: #fff;
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .muted { color: var(--muted); font-size: 0.9rem; }
+        .empty { padding: 32px; text-align: center; color: var(--muted); }
+
+        .drawer {
+            position: fixed;
+            inset: 0;
+            background: rgba(4,5,12,0.72);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 20px;
+        }
+        .drawer.open { display: flex; }
+        .drawer-panel {
+            width: min(640px, 100%);
+            max-height: 80vh;
+            overflow: auto;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+        }
+        .msg {
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+        .msg .role { color: var(--muted); font-size: 0.75rem; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="nav">
+            <div class="brand">
+                درسیو
+                <span>پنل مدیریت</span>
+            </div>
+            <button type="button" class="active" data-panel="overview">نمای کلی</button>
+            <button type="button" data-panel="users">کاربران</button>
+            <button type="button" data-panel="conversations">مکالمات</button>
+            <button type="button" data-panel="documents">فایل‌ها</button>
+            <div class="nav-foot">
+                <a href="/dashboard">بازگشت به داشبورد</a>
+            </div>
+        </aside>
+
+        <div class="main">
+            <header class="top">
+                <h1 id="page-title">نمای کلی</h1>
+                <span class="muted">{{ current_user.username }}{% if current_user.is_superadmin %} · سوپر{% elif current_user.is_admin %} · ادمین{% endif %}</span>
+            </header>
+
+            <div class="content">
+                <!-- Overview -->
+                <section class="panel active" id="panel-overview">
+                    <div class="stats" id="stats-grid">
+                        <div class="stat"><div class="label">کاربران</div><div class="value" id="stat-users">—</div></div>
+                        <div class="stat"><div class="label">فعال</div><div class="value" id="stat-active">—</div></div>
+                        <div class="stat"><div class="label">امروز</div><div class="value" id="stat-today">—</div></div>
+                        <div class="stat"><div class="label">مکالمات</div><div class="value" id="stat-conv">—</div></div>
+                        <div class="stat"><div class="label">پیام‌ها</div><div class="value" id="stat-msg">—</div></div>
+                        <div class="stat"><div class="label">فایل‌ها</div><div class="value" id="stat-docs">—</div></div>
+                    </div>
+                    <p class="muted">آمار لحظه‌ای از API ادمین</p>
+                </section>
+
+                <!-- Users -->
+                <section class="panel" id="panel-users">
+                    <div class="toolbar">
+                        <input type="search" id="users-q" placeholder="جستجوی یوزرنیم، ایمیل، نام...">
+                        <button type="button" class="btn primary" id="users-search-btn">جستجو</button>
+                    </div>
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>کاربر</th>
+                                    <th>ایمیل</th>
+                                    <th>نقش</th>
+                                    <th>وضعیت</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-body">
+                                <tr><td colspan="5" class="empty">در حال بارگذاری...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Conversations -->
+                <section class="panel" id="panel-conversations">
+                    <div class="toolbar">
+                        <input type="search" id="conv-q" placeholder="جستجوی عنوان یا یوزرنیم...">
+                        <button type="button" class="btn primary" id="conv-search-btn">جستجو</button>
+                    </div>
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>عنوان</th>
+                                    <th>کاربر</th>
+                                    <th>پیام‌ها</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="conv-body">
+                                <tr><td colspan="4" class="empty">در حال بارگذاری...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Documents -->
+                <section class="panel" id="panel-documents">
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>عنوان</th>
+                                    <th>فایل</th>
+                                    <th>کاربر</th>
+                                    <th>حجم</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="docs-body">
+                                <tr><td colspan="5" class="empty">در حال بارگذاری...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div class="drawer" id="drawer">
+        <div class="drawer-panel">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <strong id="drawer-title">جزئیات</strong>
+                <button type="button" class="btn" id="drawer-close">بستن</button>
+            </div>
+            <div id="drawer-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const titles = {
+            overview: "نمای کلی",
+            users: "کاربران",
+            conversations: "مکالمات",
+            documents: "فایل‌ها"
+        };
+
+        document.querySelectorAll(".nav button[data-panel]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".nav button").forEach((b) => b.classList.remove("active"));
+                document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+                btn.classList.add("active");
+                const id = btn.dataset.panel;
+                document.getElementById("panel-" + id).classList.add("active");
+                document.getElementById("page-title").textContent = titles[id] || "";
+                if (id === "overview") loadStats();
+                if (id === "users") loadUsers();
+                if (id === "conversations") loadConversations();
+                if (id === "documents") loadDocuments();
+            });
+        });
+
+        async function api(url, options) {
+            const res = await fetch(url, options);
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = "/dashboard";
+                throw new Error("forbidden");
+            }
+            return res;
+        }
+
+        async function loadStats() {
+            const res = await api("/admin/stats");
+            if (!res.ok) return;
+            const s = await res.json();
+            document.getElementById("stat-users").textContent = s.users_total;
+            document.getElementById("stat-active").textContent = s.users_active;
+            document.getElementById("stat-today").textContent = s.users_today;
+            document.getElementById("stat-conv").textContent = s.conversations_total;
+            document.getElementById("stat-msg").textContent = s.messages_total;
+            document.getElementById("stat-docs").textContent = s.documents_total;
+        }
+
+        async function loadUsers(q = "") {
+            const qs = q ? `?q=${encodeURIComponent(q)}` : "";
+            const res = await api("/admin/users" + qs);
+            const body = document.getElementById("users-body");
+            if (!res.ok) {
+                body.innerHTML = `<tr><td colspan="5" class="empty">خطا در بارگذاری</td></tr>`;
+                return;
+            }
+            const rows = await res.json();
+            if (!rows.length) {
+                body.innerHTML = `<tr><td colspan="5" class="empty">کاربری پیدا نشد</td></tr>`;
+                return;
+            }
+            body.innerHTML = rows.map((u) => {
+                const role = u.is_superadmin ? "سوپر" : (u.is_admin ? "ادمین" : "کاربر");
+                const roleClass = (u.is_admin || u.is_superadmin) ? "admin" : "";
+                const status = u.is_active ? `<span class="badge ok">فعال</span>` : `<span class="badge warn">غیرفعال</span>`;
+                const canToggle = !u.is_superadmin;
+                return `<tr>
+                    <td>@${u.username}<div class="muted">${u.display_name || ""}</div></td>
+                    <td>${u.email}</td>
+                    <td><span class="badge ${roleClass}">${role}</span></td>
+                    <td>${status}</td>
+                    <td>
+                        ${canToggle ? `<button type="button" class="btn" data-toggle-user="${u.id}" data-active="${u.is_active}">${u.is_active ? "غیرفعال" : "فعال"} کردن</button>` : "—"}
+                    </td>
+                </tr>`;
+            }).join("");
+
+            body.querySelectorAll("[data-toggle-user]").forEach((btn) => {
+                btn.onclick = async () => {
+                    const id = btn.dataset.toggleUser;
+                    const active = btn.dataset.active === "true";
+                    const res = await api(`/admin/users/${id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ is_active: !active })
+                    });
+                    if (res.ok) loadUsers(document.getElementById("users-q").value.trim());
+                };
+            });
+        }
+
+        document.getElementById("users-search-btn").onclick = () => {
+            loadUsers(document.getElementById("users-q").value.trim());
+        };
+
+        async function loadConversations(q = "") {
+            const qs = q ? `?q=${encodeURIComponent(q)}` : "";
+            const res = await api("/admin/conversations" + qs);
+            const body = document.getElementById("conv-body");
+            if (!res.ok) {
+                body.innerHTML = `<tr><td colspan="4" class="empty">خطا در بارگذاری</td></tr>`;
+                return;
+            }
+            const rows = await res.json();
+            if (!rows.length) {
+                body.innerHTML = `<tr><td colspan="4" class="empty">موردی نیست</td></tr>`;
+                return;
+            }
+            body.innerHTML = rows.map((c) => `<tr>
+                <td>${c.title}</td>
+                <td>@${c.username || "—"}</td>
+                <td>${c.message_count}</td>
+                <td>
+                    <button type="button" class="btn" data-open-conv="${c.id}">مشاهده</button>
+                    <button type="button" class="btn danger" data-del-conv="${c.id}">حذف</button>
+                </td>
+            </tr>`).join("");
+
+            body.querySelectorAll("[data-open-conv]").forEach((btn) => {
+                btn.onclick = () => openConversation(btn.dataset.openConv);
+            });
+            body.querySelectorAll("[data-del-conv]").forEach((btn) => {
+                btn.onclick = async () => {
+                    if (!confirm("حذف نرم این مکالمه؟")) return;
+                    const res = await api(`/admin/conversations/${btn.dataset.delConv}`, { method: "DELETE" });
+                    if (res.ok) loadConversations(document.getElementById("conv-q").value.trim());
+                };
+            });
+        }
+
+        document.getElementById("conv-search-btn").onclick = () => {
+            loadConversations(document.getElementById("conv-q").value.trim());
+        };
+
+        async function openConversation(id) {
+            const res = await api(`/admin/conversations/${id}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            document.getElementById("drawer-title").textContent = data.title;
+            document.getElementById("drawer-body").innerHTML = (data.messages || []).map((m) => `
+                <div class="msg">
+                    <div class="role">${m.role}</div>
+                    <div></div>
+                </div>
+            `).join("") || `<div class="empty">پیامی نیست</div>`;
+
+            const nodes = document.getElementById("drawer-body").querySelectorAll(".msg div:last-child");
+            (data.messages || []).forEach((m, i) => {
+                if (nodes[i]) nodes[i].textContent = m.content;
+            });
+            document.getElementById("drawer").classList.add("open");
+        }
+
+        document.getElementById("drawer-close").onclick = () => {
+            document.getElementById("drawer").classList.remove("open");
+        };
+        document.getElementById("drawer").onclick = (e) => {
+            if (e.target.id === "drawer") e.currentTarget.classList.remove("open");
+        };
+
+        async function loadDocuments() {
+            const res = await api("/admin/documents");
+            const body = document.getElementById("docs-body");
+            if (!res.ok) {
+                body.innerHTML = `<tr><td colspan="5" class="empty">خطا در بارگذاری</td></tr>`;
+                return;
+            }
+            const rows = await res.json();
+            if (!rows.length) {
+                body.innerHTML = `<tr><td colspan="5" class="empty">فایلی نیست</td></tr>`;
+                return;
+            }
+            body.innerHTML = rows.map((d) => `<tr>
+                <td>${d.title}</td>
+                <td>${d.filename}</td>
+                <td>@${d.username || "—"}</td>
+                <td>${Math.round(d.file_size / 1024)} KB</td>
+                <td><button type="button" class="btn danger" data-del-doc="${d.id}">حذف</button></td>
+            </tr>`).join("");
+
+            body.querySelectorAll("[data-del-doc]").forEach((btn) => {
+                btn.onclick = async () => {
+                    if (!confirm("حذف فایل از سرور؟")) return;
+                    const res = await api(`/admin/documents/${btn.dataset.delDoc}`, { method: "DELETE" });
+                    if (res.ok) loadDocuments();
+                };
+            });
+        }
+
+        loadStats();
+    </script>
+</body>
+</html>

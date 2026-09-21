@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
@@ -56,10 +57,42 @@ def ensure_user_columns() -> None:
                     text(f"ALTER TABLE users ADD COLUMN {name} {ddl}")
                 )
 
+        if "is_superadmin" not in existing:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN is_superadmin BOOLEAN DEFAULT 0 NOT NULL"
+                )
+            )
+
         if "allow_data_usage" not in existing:
             conn.execute(
                 text(
                     "ALTER TABLE users ADD COLUMN "
                     "allow_data_usage BOOLEAN NOT NULL DEFAULT 0"
                 )
+            )
+
+def ensure_conversation_public_ids() -> None:
+    """Add public_id to conversations and backfill existing rows."""
+    inspector = inspect(engine)
+    if "conversations" not in inspector.get_table_names():
+        return
+
+    existing = {col["name"] for col in inspector.get_columns("conversations")}
+
+    with engine.begin() as conn:
+        if "public_id" not in existing:
+            # SQLite: add nullable first, backfill, then we keep it NOT NULL in ORM for new rows
+            conn.execute(
+                text("ALTER TABLE conversations ADD COLUMN public_id VARCHAR(36)")
+            )
+
+        rows = conn.execute(
+            text("SELECT id FROM conversations WHERE public_id IS NULL OR public_id = ''")
+        ).fetchall()
+
+        for (row_id,) in rows:
+            conn.execute(
+                text("UPDATE conversations SET public_id = :pid WHERE id = :id"),
+                {"pid": str(uuid.uuid4()), "id": row_id},
             )

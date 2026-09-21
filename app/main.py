@@ -7,8 +7,8 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from .database import Base, engine, ensure_user_columns
-from app.routers import documents, pages, auth, chat, users
+from .database import Base, engine, ensure_user_columns, ensure_conversation_public_ids
+from app.routers import documents, pages, auth, chat, users, admin
 
 from app.models import Document, User
 from app.services.auth import hash_password, verify_password
@@ -49,6 +49,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 Base.metadata.create_all(bind=engine)
 ensure_user_columns()
+ensure_conversation_public_ids()
 
 
 app.include_router(documents.router)
@@ -56,3 +57,4 @@ app.include_router(pages.router)
 app.include_router(auth.router)
 app.include_router(chat.router)
 app.include_router(users.router)
+app.include_router(admin.router)

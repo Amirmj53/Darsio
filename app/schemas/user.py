@@ -95,6 +95,7 @@ class ProfileResponse(BaseModel):
     allow_data_usage: bool
     is_verified: bool
     is_admin: bool
+    is_superadmin: bool = False
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

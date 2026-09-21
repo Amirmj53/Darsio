@@ -51,57 +51,57 @@ def search_conversations(
 
 
 @router.delete(
-    "/conversations/{conversation_id}",
+    "/conversations/{public_id}",
     status_code=status.HTTP_204_NO_CONTENT
 )
 def delete_conversation(
-    conversation_id: int,
+    public_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    chat_service.delete_conversation(db, current_user, conversation_id)
+    chat_service.delete_conversation(db, current_user, public_id)
     return None
 
 @router.post(
-    "/conversations/{conversation_id}/restore",
+    "/conversations/{public_id}/restore",
     response_model=ConversationResponse
 )
 def restore_conversation(
-    conversation_id: int,
+    public_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return chat_service.restore_conversation(db, current_user, conversation_id)
+    return chat_service.restore_conversation(db, current_user, public_id)
 
 
 @router.get(
-    "/conversations/{conversation_id}",
+    "/conversations/{public_id}",
     response_model=ConversationDetail
 )
 def get_conversation(
-    conversation_id: int,
+    public_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return chat_service.get_conversation(db, current_user, conversation_id)
+    return chat_service.get_conversation(db, current_user, public_id)
 
 
-@router.patch("/conversations/{conversation_id}/pin", response_model=ConversationResponse)
+@router.patch("/conversations/{public_id}/pin", response_model=ConversationResponse)
 async def toggle_pin(
-    conversation_id :int,
+    public_id :str,
     current_user:User = Depends(get_current_user),
     db:Session = Depends(get_db),
 ):
-    return chat_service.toggle_pin_conversation(db, current_user, conversation_id)
+    return chat_service.toggle_pin_conversation(db, current_user, public_id)
 
-@router.patch("/conversations/{conversation_id}/rename", response_model=ConversationResponse)
+@router.patch("/conversations/{public_id}/rename", response_model=ConversationResponse)
 def rename_conversation(
-    conversation_id: int,
+    public_id: str,
     data: ConversationRename,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return chat_service.rename_conversation(db, current_user, conversation_id, data.title)
+    return chat_service.rename_conversation(db, current_user, public_id, data.title)
 
 
 
@@ -121,13 +121,13 @@ def edit_message(
     )
 
 @router.post(
-    "/conversations/{conversation_id}/messages",
+    "/conversations/{public_id}/messages",
     response_model=MessageResponse
 )
 def send_message(
-    conversation_id: int,
+    public_id: str,
     data: MessageCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return chat_service.send_message(db, current_user, conversation_id, data)
+    return chat_service.send_message(db, current_user, public_id, data)
