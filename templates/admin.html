@@ -18,6 +18,7 @@
             <button type="button" data-panel="users">کاربران</button>
             <button type="button" data-panel="conversations">مکالمات</button>
             <button type="button" data-panel="documents">فایل‌ها</button>
+            <button type="button" data-panel="tickets">تیکت‌ها</button>
             <div class="nav-foot">
                 <a href="/dashboard">بازگشت به داشبورد</a>
             </div>
@@ -138,6 +139,46 @@
                             <button type="button" class="btn" id="docs-prev">قبلی</button>
                             <span class="page-info">صفحه <span id="docs-page">۱</span></span>
                             <button type="button" class="btn" id="docs-next">بعدی</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tickets -->
+                <section class="panel" id="panel-tickets">
+                    <div class="toolbar">
+                        <select id="tk-status">
+                            <option value="">همه وضعیت‌ها</option>
+                            <option value="open">باز</option>
+                            <option value="answered">پاسخ داده شده</option>
+                            <option value="closed">بسته</option>
+                        </select>
+                        <select id="tk-category">
+                            <option value="">همه دسته‌ها</option>
+                            <option value="general_report">گزارش کلی</option>
+                            <option value="bug_report">گزارش باگ</option>
+                        </select>
+                        <input type="search" id="tk-q" placeholder="جستجوی یوزرنیم، ایمیل، متن...">
+                        <button type="button" class="btn primary" id="tk-search-btn">جستجو</button>
+                    </div>
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>کاربر</th>
+                                    <th>موضوع</th>
+                                    <th>توضیحات</th>
+                                    <th>وضعیت</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tk-body">
+                                <tr><td colspan="5" class="empty">در حال بارگذاری...</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="pager">
+                            <button type="button" class="btn" id="tk-prev">قبلی</button>
+                            <span class="page-info">صفحه <span id="tk-page">۱</span></span>
+                            <button type="button" class="btn" id="tk-next">بعدی</button>
                         </div>
                     </div>
                 </section>

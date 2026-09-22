@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from .database import Base, engine, ensure_user_columns, ensure_conversation_public_ids
-from app.routers import documents, pages, auth, chat, users, admin
+from app.routers import documents, pages, auth, chat, users, admin, tickets
 
 from app.models import Document, User
 from app.services.auth import hash_password, verify_password
@@ -49,6 +49,7 @@ app.mount(
 
 
 Path("uploads/avatars").mkdir(parents=True, exist_ok=True)
+Path("uploads/tickets").mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
@@ -63,3 +64,4 @@ app.include_router(auth.router)
 app.include_router(chat.router)
 app.include_router(users.router)
 app.include_router(admin.router)
+app.include_router(tickets.router)

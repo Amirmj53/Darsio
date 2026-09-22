@@ -8,7 +8,8 @@
         overview: "نمای کلی",
         users: "کاربران",
         conversations: "مکالمات",
-        documents: "فایل‌ها"
+        documents: "فایل‌ها",
+        tickets: "تیکت‌ها"
     };
 
     const PAGE_SIZE = 20;
@@ -17,7 +18,8 @@
     const state = {
         users: { page: 0, q: "", hasNext: false },
         conv: { page: 0, q: "", hasNext: false },
-        docs: { page: 0, hasNext: false }
+        docs: { page: 0, hasNext: false },
+        tk: { page: 0, q: "", status: "", category: "", hasNext: false }
     };
 
     /* ---------- helpers ---------- */
@@ -108,6 +110,7 @@
             if (id === "users") loadUsers(true);
             if (id === "conversations") loadConversations(true);
             if (id === "documents") loadDocuments(true);
+            if (id === "tickets") loadTickets(true);
         });
     });
 
@@ -511,6 +514,164 @@
     bindPager("users", loadUsers);
     bindPager("conv", loadConversations);
     bindPager("docs", loadDocuments);
+
+    /* ---------- tickets ---------- */
+    const TK_CATEGORY_LABELS = { general_report: "گزارش کلی", bug_report: "گزارش باگ" };
+    const TK_STATUS_LABELS = { open: "باز", answered: "پاسخ داده شده", closed: "بسته" };
+
+    async function loadTickets(reset = true) {
+        if (reset) state.tk.page = 0;
+        const body = el("tk-body");
+        setTableState(body, 5, "در حال بارگذاری...");
+
+        const params = new URLSearchParams();
+        if (state.tk.status) params.set("status", state.tk.status);
+        if (state.tk.category) params.set("category", state.tk.category);
+        if (state.tk.q) params.set("q", state.tk.q);
+        params.set("skip", String(state.tk.page * PAGE_SIZE));
+        params.set("limit", String(PAGE_SIZE + 1));
+
+        const res = await api("/admin/tickets?" + params.toString());
+        if (!res.ok) {
+            setTableState(body, 5, "خطا در بارگذاری");
+            return;
+        }
+        const rows = await res.json();
+        state.tk.hasNext = rows.length > PAGE_SIZE;
+        renderTickets(rows.slice(0, PAGE_SIZE));
+        updatePager("tk");
+    }
+
+    function renderTickets(items) {
+        const body = el("tk-body");
+        if (!items.length) {
+            setTableState(body, 5, "تیکتی نیست");
+            return;
+        }
+        body.innerHTML = items
+            .map((t) => {
+                const cat = TK_CATEGORY_LABELS[t.category] || t.category;
+                const status = TK_STATUS_LABELS[t.status] || t.status;
+                const badgeClass =
+                    t.status === "open" ? "warn" : t.status === "answered" ? "admin" : "";
+                return `<tr>
+                    <td>@${esc(t.username || "—")}<div class="muted">${esc(t.email || "")}</div></td>
+                    <td>${esc(cat)}</td>
+                    <td class="tk-preview">${esc(t.description)}</td>
+                    <td><span class="badge ${badgeClass}">${esc(status)}</span></td>
+                    <td><button type="button" class="btn" data-action="open-ticket" data-id="${t.id}">مشاهده</button></td>
+                </tr>`;
+            })
+            .join("");
+    }
+
+    el("tk-body").addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-action]");
+        if (btn && btn.dataset.action === "open-ticket") openTicketDetail(Number(btn.dataset.id));
+    });
+
+    async function openTicketDetail(id) {
+        el("drawer-title").textContent = "جزئیات تیکت";
+        const body = el("drawer-body");
+        body.innerHTML = `<div class="empty">در حال بارگذاری...</div>`;
+        el("drawer").classList.add("open");
+        const res = await api(`/admin/tickets/${id}`);
+        if (!res.ok) {
+            body.innerHTML = `<div class="empty">خطا در بارگذاری</div>`;
+            return;
+        }
+        renderTicketDetail(body, await res.json());
+    }
+
+    function renderTicketDetail(body, t) {
+        const cat = TK_CATEGORY_LABELS[t.category] || t.category;
+        const status = TK_STATUS_LABELS[t.status] || t.status;
+        const attachment = t.attachment_url
+            ? `<div class="tk-attachment"><img src="${esc(t.attachment_url)}" alt="پیوست"></div>`
+            : "";
+        const replies = (t.replies || [])
+            .map((r) => {
+                const role = r.author_role === "admin" ? "پشتیبانی" : "کاربر";
+                return `<div class="tk-reply ${r.author_role}">
+                    <div class="tk-reply-role">${role}</div>
+                    <div>${esc(r.content)}</div>
+                </div>`;
+            })
+            .join("");
+
+        const statusBtns = Object.keys(TK_STATUS_LABELS)
+            .map(
+                (s) =>
+                    `<button type="button" class="btn ${t.status === s ? "active" : ""}" data-tk-status="${s}" data-id="${t.id}">${TK_STATUS_LABELS[s]}</button>`
+            )
+            .join("");
+
+        body.innerHTML = `
+            <div class="tk-detail-meta">
+                کاربر: @${esc(t.username || "—")} (${esc(t.email || "—")})<br>
+                دسته: ${esc(cat)} · وضعیت: ${esc(status)} · ${new Date(t.created_at).toLocaleString("fa-IR")}
+            </div>
+            <div class="tk-status-row">${statusBtns}</div>
+            <div class="tk-detail-desc">${esc(t.description)}</div>
+            ${attachment}
+            <div class="muted" style="margin:6px 0">پاسخ‌ها</div>
+            ${replies || '<div class="muted">پاسخی نیست</div>'}
+            <div class="tk-reply-form">
+                <textarea id="tk-reply-input" placeholder="پاسخ به کاربر..."></textarea>
+                <button type="button" class="btn primary" id="tk-reply-btn" data-id="${t.id}">ارسال پاسخ</button>
+            </div>`;
+
+        body.querySelectorAll("[data-tk-status]").forEach((b) => {
+            b.onclick = async () => {
+                const res = await api(`/admin/tickets/${b.dataset.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: b.dataset.tkStatus })
+                });
+                if (res.ok) {
+                    toast("وضعیت تیکت به‌روزرسانی شد", "success");
+                    openTicketDetail(Number(b.dataset.id));
+                } else {
+                    toast("خطا در به‌روزرسانی وضعیت", "error");
+                }
+            };
+        });
+
+        body.querySelector("#tk-reply-btn").onclick = async () => {
+            const input = body.querySelector("#tk-reply-input");
+            const content = (input.value || "").trim();
+            if (!content) {
+                toast("متن پاسخ خالی است", "error");
+                return;
+            }
+            const res = await api(`/admin/tickets/${t.id}/replies`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content })
+            });
+            if (res.ok) {
+                toast("پاسخ ثبت شد", "success");
+                openTicketDetail(t.id);
+            } else {
+                const err = await res.json().catch(() => ({}));
+                toast(typeof err.detail === "string" ? err.detail : "خطا در ثبت پاسخ", "error");
+            }
+        };
+    }
+
+    const applyTicketsFilter = () => {
+        state.tk.status = el("tk-status").value;
+        state.tk.category = el("tk-category").value;
+        state.tk.q = el("tk-q").value.trim();
+        loadTickets(true);
+    };
+    el("tk-search-btn").onclick = applyTicketsFilter;
+    el("tk-q").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") applyTicketsFilter();
+    });
+    el("tk-status").addEventListener("change", applyTicketsFilter);
+    el("tk-category").addEventListener("change", applyTicketsFilter);
+    bindPager("tk", loadTickets);
 
     /* ---------- init ---------- */
     loadStats();

@@ -12,7 +12,15 @@ from app.schemas.admin import (
     AdminConversationDetail,
     AdminDocumentItem,
 )
+from app.schemas.ticket import (
+    AdminTicketReplyCreate,
+    AdminTicketStatusUpdate,
+    TicketDetail,
+    TicketListItem,
+    TicketReplyOut,
+)
 from app.services import admin as admin_service
+from app.services import tickets as tickets_service
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -115,3 +123,60 @@ def document_delete(
 ):
     admin_service.delete_document_admin(db, document_id)
     return None
+
+
+# --------------------------------------------------
+# Tickets
+# --------------------------------------------------
+
+@router.get("/tickets", response_model=list[TicketListItem])
+def admin_tickets(
+    status_filter: str | None = Query(default=None, alias="status"),
+    category: str | None = Query(default=None),
+    q: str | None = Query(default=None),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=100),
+    _: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    tickets = tickets_service.list_admin_tickets(
+        db,
+        ticket_status=status_filter,
+        category=category,
+        q=q,
+        skip=skip,
+        limit=limit,
+    )
+    return [tickets_service._ticket_dict(t, with_user=True) for t in tickets]
+
+
+@router.get("/tickets/{ticket_id}", response_model=TicketDetail)
+def admin_ticket_detail(
+    ticket_id: int,
+    _: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    ticket = tickets_service.get_admin_ticket(db, ticket_id)
+    return tickets_service._ticket_detail_dict(ticket, with_user=True)
+
+
+@router.post("/tickets/{ticket_id}/replies", response_model=TicketReplyOut)
+def admin_ticket_reply(
+    ticket_id: int,
+    data: AdminTicketReplyCreate,
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    reply = tickets_service.admin_reply(db, current_admin, ticket_id, data.content)
+    return tickets_service._reply_dict(reply)
+
+
+@router.patch("/tickets/{ticket_id}", response_model=TicketListItem)
+def admin_ticket_status(
+    ticket_id: int,
+    data: AdminTicketStatusUpdate,
+    _: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    ticket = tickets_service.admin_update_status(db, ticket_id, data.status)
+    return tickets_service._ticket_dict(ticket, with_user=True)

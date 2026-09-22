@@ -1032,6 +1032,227 @@ document.querySelectorAll(".theme-option").forEach((btn) => {
 const savedTheme = localStorage.getItem("darsio-theme") || "dark";
 document.querySelector(`.theme-option[data-theme="${savedTheme}"]`)?.classList.add("active");
 
+// ---------- Feedback / Support ----------
+const feedbackOverlay = document.getElementById("feedback-overlay");
+const openFeedbackBtn = document.getElementById("open-feedback-btn");
+const closeFeedbackBtn = document.getElementById("close-feedback-btn");
+
+const FB_CATEGORY_LABELS = { general_report: "گزارش کلی", bug_report: "گزارش باگ" };
+const FB_STATUS_LABELS = { open: "باز", answered: "پاسخ داده شده", closed: "بسته" };
+
+function escHtml(s) {
+    return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function toast(message, type) {
+    let container = document.getElementById("toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "toast-container";
+        document.body.appendChild(container);
+    }
+    const node = document.createElement("div");
+    node.className = "toast" + (type ? " " + type : "");
+    node.textContent = message;
+    container.appendChild(node);
+    requestAnimationFrame(() => node.classList.add("show"));
+    setTimeout(() => {
+        node.classList.remove("show");
+        setTimeout(() => node.remove(), 250);
+    }, 3000);
+}
+
+function openFeedback() {
+    userMenu?.classList.remove("open");
+    feedbackOverlay?.classList.add("open");
+    showFeedbackView("create");
+}
+
+function closeFeedback() {
+    feedbackOverlay?.classList.remove("open");
+}
+
+function showFeedbackView(view) {
+    document.querySelectorAll(".feedback-nav-item").forEach((b) => {
+        b.classList.toggle("active", b.dataset.view === view);
+    });
+    document.querySelectorAll(".feedback-view").forEach((v) => {
+        v.classList.toggle("active", v.id === "feedback-view-" + view);
+    });
+    const titleEl = document.getElementById("feedback-panel-title");
+    if (titleEl) titleEl.textContent = view === "create" ? "ارسال تیکت" : "تیکت‌های من";
+    if (view === "my") loadMyTickets();
+}
+
+async function loadMyTickets() {
+    const list = document.getElementById("fb-list");
+    const detail = document.getElementById("fb-detail");
+    detail.hidden = true;
+    list.hidden = false;
+    list.innerHTML = `<div class="muted" style="padding:12px">در حال بارگذاری...</div>`;
+    try {
+        const res = await fetch("/tickets");
+        if (!res.ok) {
+            list.innerHTML = `<div class="muted" style="padding:12px">خطا در بارگذاری</div>`;
+            return;
+        }
+        const tickets = await res.json();
+        if (!tickets.length) {
+            list.innerHTML = `<div class="muted" style="padding:12px">تیکتی ثبت نشده است</div>`;
+            return;
+        }
+        list.innerHTML = tickets
+            .map(
+                (t) => `
+            <div class="fb-ticket" data-id="${t.id}">
+                <div class="fb-ticket-head">
+                    <span class="fb-ticket-category">${escHtml(FB_CATEGORY_LABELS[t.category] || t.category)}</span>
+                    <span class="fb-badge ${t.status}">${FB_STATUS_LABELS[t.status] || escHtml(t.status)}</span>
+                </div>
+                <div class="fb-ticket-preview">${escHtml(t.description)}</div>
+                <div class="fb-ticket-date">${new Date(t.created_at).toLocaleString("fa-IR")}</div>
+            </div>`
+            )
+            .join("");
+        list.querySelectorAll(".fb-ticket").forEach((node) => {
+            node.onclick = () => showTicketDetail(Number(node.dataset.id));
+        });
+    } catch (err) {
+        console.error(err);
+        list.innerHTML = `<div class="muted" style="padding:12px">خطا در بارگذاری</div>`;
+    }
+}
+
+async function showTicketDetail(id) {
+    const list = document.getElementById("fb-list");
+    const detail = document.getElementById("fb-detail");
+    list.hidden = true;
+    detail.hidden = false;
+    detail.innerHTML = `<div class="muted" style="padding:12px">در حال بارگذاری...</div>`;
+    try {
+        const res = await fetch(`/tickets/${id}`);
+        if (!res.ok) {
+            detail.innerHTML = `<div class="muted" style="padding:12px">خطا در بارگذاری</div>`;
+            return;
+        }
+        const t = await res.json();
+        const cat = FB_CATEGORY_LABELS[t.category] || t.category;
+        const statusLabel = FB_STATUS_LABELS[t.status] || t.status;
+        const attachment = t.attachment_url
+            ? `<div class="fb-attachment"><img src="${escHtml(t.attachment_url)}" alt="پیوست"></div>`
+            : "";
+        const replies = (t.replies || [])
+            .map((r) => {
+                const role = r.author_role === "admin" ? "پشتیبانی" : "شما";
+                return `<div class="fb-msg ${r.author_role}">
+                    <div class="fb-msg-role">${role}</div>
+                    <div>${escHtml(r.content)}</div>
+                </div>`;
+            })
+            .join("");
+
+        detail.innerHTML = `
+            <button type="button" class="btn-ghost fb-back">بازگشت به لیست</button>
+            <div class="fb-ticket" style="cursor:default">
+                <div class="fb-ticket-head">
+                    <span class="fb-ticket-category">${escHtml(cat)}</span>
+                    <span class="fb-badge ${t.status}">${escHtml(statusLabel)}</span>
+                </div>
+                <div class="fb-msg">
+                    <div class="fb-msg-role">توضیحات شما</div>
+                    <div>${escHtml(t.description)}</div>
+                </div>
+                ${attachment}
+                <div class="fb-ticket-date">${new Date(t.created_at).toLocaleString("fa-IR")}</div>
+            </div>
+            <div class="fb-thread">
+                <div class="fb-ticket-category" style="margin-bottom:8px">پاسخ‌ها</div>
+                ${replies || '<div class="muted">هنوز پاسخی ثبت نشده</div>'}
+            </div>`;
+
+        detail.querySelector(".fb-back").onclick = () => {
+            list.hidden = false;
+            detail.hidden = true;
+        };
+    } catch (err) {
+        console.error(err);
+        detail.innerHTML = `<div class="muted" style="padding:12px">خطا در بارگذاری</div>`;
+    }
+}
+
+document.querySelectorAll(".feedback-nav-item").forEach((btn) => {
+    btn.addEventListener("click", () => showFeedbackView(btn.dataset.view));
+});
+openFeedbackBtn?.addEventListener("click", openFeedback);
+closeFeedbackBtn?.addEventListener("click", closeFeedback);
+feedbackOverlay?.addEventListener("click", (e) => {
+    if (e.target === feedbackOverlay) closeFeedback();
+});
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeFeedback();
+});
+
+document.getElementById("fb-file")?.addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    const preview = document.getElementById("fb-preview");
+    preview.innerHTML = "";
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        toast("فقط تصویر JPG، PNG یا WEBP مجاز است", "error");
+        e.target.value = "";
+        return;
+    }
+    const url = URL.createObjectURL(file);
+    preview.innerHTML = `<img src="${url}" alt=""><span class="fb-file-name">${escHtml(file.name)}</span>`;
+});
+
+document.getElementById("feedback-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("fb-status");
+    status.textContent = "";
+    status.className = "form-status";
+
+    const category = document.getElementById("fb-category").value;
+    const description = document.getElementById("fb-description").value.trim();
+    if (!description) {
+        status.textContent = "توضیحات الزامی است";
+        status.classList.add("err");
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append("category", category);
+    fd.append("description", description);
+    const fileInput = document.getElementById("fb-file");
+    if (fileInput.files && fileInput.files[0]) fd.append("file", fileInput.files[0]);
+
+    try {
+        const res = await fetch("/tickets", { method: "POST", body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            status.textContent = typeof data.detail === "string" ? data.detail : "ارسال ناموفق بود";
+            status.classList.add("err");
+            return;
+        }
+        e.target.reset();
+        document.getElementById("fb-preview").innerHTML = "";
+        status.textContent = "تیکت با موفقیت ثبت شد";
+        status.classList.add("ok");
+        toast("تیکت ثبت شد", "success");
+        showFeedbackView("my");
+    } catch (err) {
+        console.error(err);
+        status.textContent = "خطا در ارتباط با سرور";
+        status.classList.add("err");
+    }
+});
+
 // ---------- Boot ----------
 window.addEventListener("popstate", (e) => {
     const pid = (e.state && e.state.publicId) || publicIdFromPath();

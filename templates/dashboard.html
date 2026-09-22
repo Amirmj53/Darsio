@@ -1258,6 +1258,110 @@
                 border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             }
         }
+
+        /* ============ Feedback overlay ============ */
+        .feedback-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.9rem;
+            padding: 11px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: right;
+            transition: 0.15s;
+        }
+        .feedback-nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text); }
+        .feedback-nav-item.active { background: rgba(129, 140, 248, 0.14); color: var(--text); }
+
+        .feedback-view { display: none; }
+        .feedback-view.active { display: block; }
+
+        .settings-form textarea {
+            min-height: 120px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(8, 10, 18, 0.65);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.93rem;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .settings-form textarea::placeholder { color: rgba(155, 163, 180, 0.7); }
+        .settings-form textarea:hover { border-color: rgba(255, 255, 255, 0.14); background: rgba(10, 12, 20, 0.8); }
+        .settings-form textarea:focus {
+            border-color: rgba(129, 140, 248, 0.55);
+            background: rgba(10, 12, 22, 0.9);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.12), 0 0 24px rgba(129, 140, 248, 0.08);
+        }
+
+        .fb-file-preview { margin-top: -4px; display: flex; gap: 8px; align-items: center; }
+        .fb-file-preview img { max-width: 160px; max-height: 120px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); object-fit: cover; }
+        .fb-file-preview .fb-file-name { font-size: 0.78rem; color: var(--text-muted); }
+
+        .fb-ticket {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .fb-ticket:hover { border-color: rgba(129, 140, 248, 0.35); background: rgba(129, 140, 248, 0.06); }
+        .fb-ticket-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+        .fb-ticket-category { font-size: 0.82rem; color: var(--accent); font-weight: 500; }
+        .fb-ticket-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+        .fb-ticket-preview { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .fb-badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; border: 1px solid var(--border, rgba(255,255,255,0.08)); color: var(--text-muted); }
+        .fb-badge.open { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
+        .fb-badge.answered { color: #a5b4fc; border-color: rgba(129, 140, 248, 0.35); }
+        .fb-badge.closed { color: var(--text-muted); }
+
+        .fb-thread { margin-top: 6px; }
+        .fb-msg { padding: 11px 13px; border-radius: 11px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.87rem; line-height: 1.6; }
+        .fb-msg .fb-msg-role { font-size: 0.73rem; color: var(--text-muted); margin-bottom: 4px; }
+        .fb-msg.admin { border-color: rgba(129, 140, 248, 0.2); }
+        .fb-msg.admin .fb-msg-role { color: #a5b4fc; }
+
+        .fb-back { margin-bottom: 12px; }
+        .fb-attachment img { max-width: 100%; max-height: 260px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); margin-top: 8px; }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 400;
+        }
+        .toast {
+            background: #12141e;
+            border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+            color: var(--text);
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-size: 0.86rem;
+            box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { border-color: rgba(74, 222, 128, 0.35); }
+        .toast.error { border-color: rgba(248, 113, 113, 0.35); }
     </style>
 </head>
 <body>
@@ -1301,6 +1405,13 @@
                 </button>
 
                 <div class="user-menu" id="user-menu">
+                    <button type="button" id="open-feedback-btn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 3v18"/>
+                            <path d="M5 4h12l-2.5 4 2.5 4H5"/>
+                        </svg>
+                        گزارش
+                    </button>
                     <button type="button" id="open-settings-btn">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3"/>
@@ -1554,6 +1665,57 @@
                                 </a>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="settings-overlay" id="feedback-overlay">
+        <div class="settings-panel">
+            <aside class="settings-nav">
+                <div class="settings-nav-title">گزارش</div>
+                <button type="button" class="feedback-nav-item active" data-view="create">ارسال تیکت</button>
+                <button type="button" class="feedback-nav-item" data-view="my">تیکت‌های من</button>
+            </aside>
+            <section class="settings-content">
+                <div class="settings-content-header">
+                    <h2 id="feedback-panel-title">ارسال تیکت</h2>
+                    <button type="button" class="icon-btn" id="close-feedback-btn" title="بستن">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="settings-content-body">
+                    <div class="feedback-view active" id="feedback-view-create">
+                        <form id="feedback-form" class="settings-form">
+                            <label>
+                                <span>موضوع</span>
+                                <select id="fb-category">
+                                    <option value="general_report">گزارش کلی</option>
+                                    <option value="bug_report">گزارش باگ</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>توضیحات</span>
+                                <textarea id="fb-description" placeholder="مشکل یا پیشنهادت رو بنویس..."></textarea>
+                            </label>
+                            <label>
+                                <span>پیوست (اختیاری، تصویر)</span>
+                                <input type="file" id="fb-file" accept="image/jpeg,image/png,image/webp">
+                            </label>
+                            <div class="fb-file-preview" id="fb-preview"></div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">ارسال تیکت</button>
+                            </div>
+                            <p class="form-status" id="fb-status"></p>
+                        </form>
+                    </div>
+
+                    <div class="feedback-view" id="feedback-view-my">
+                        <div id="fb-list"></div>
+                        <div id="fb-detail" hidden></div>
                     </div>
                 </div>
             </section>

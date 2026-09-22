@@ -300,3 +300,93 @@ td.actions { min-width: 220px; }
     .brand { padding: 8px 12px; }
     .nav-foot { margin-left: auto; }
 }
+
+/* ============ Tickets ============ */
+.toolbar select {
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 11px;
+    border: 1px solid var(--border);
+    background: rgba(8, 10, 18, 0.65);
+    color: var(--text);
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+}
+.toolbar select:focus { border-color: rgba(129, 140, 248, 0.5); }
+.toolbar select option { background: #12141c; color: var(--text); }
+
+.tk-preview {
+    max-width: 280px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--muted);
+}
+
+.tk-detail-meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.7;
+}
+.tk-detail-desc {
+    padding: 12px 14px;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 12px;
+}
+.tk-attachment img {
+    max-width: 100%;
+    max-height: 280px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 12px;
+}
+.tk-reply {
+    padding: 11px 13px;
+    border-radius: 11px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.87rem;
+    line-height: 1.6;
+}
+.tk-reply .tk-reply-role { font-size: 0.73rem; color: var(--muted); margin-bottom: 4px; }
+.tk-reply.admin { border-color: rgba(129, 140, 248, 0.2); }
+.tk-reply.admin .tk-reply-role { color: #a5b4fc; }
+
+.tk-reply-form { margin-top: 16px; }
+.tk-reply-form textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 11px 13px;
+    border-radius: 11px;
+    border: 1px solid var(--border);
+    background: rgba(8, 10, 18, 0.65);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    margin-bottom: 10px;
+}
+.tk-reply-form textarea:focus {
+    border-color: rgba(129, 140, 248, 0.55);
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.12);
+}
+.tk-status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.tk-status-row .btn.active {
+    background: rgba(129, 140, 248, 0.16);
+    color: #a5b4fc;
+}
