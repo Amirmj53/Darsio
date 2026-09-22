@@ -2,6 +2,13 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class AdminStatsSeries(BaseModel):
+    months: list[str] = []
+    new_users: list[int] = []
+    chats: list[int] = []
+    active_users: list[int] = []
+
+
 class AdminStats(BaseModel):
     users_total: int
     users_today: int
@@ -9,6 +16,8 @@ class AdminStats(BaseModel):
     conversations_total: int
     messages_total: int
     documents_total: int
+    subscribers_active: int = 0
+    series: AdminStatsSeries = Field(default_factory=AdminStatsSeries)
 
 
 class AdminUserListItem(BaseModel):

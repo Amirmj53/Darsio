@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -18,9 +19,13 @@ from app.validation import first_friendly_error
 app = FastAPI()
 
 
+SECRET_KEY = os.environ.get("DARSIO_SECRET_KEY", "CHANGE_THIS_LATER")
+if SECRET_KEY == "CHANGE_THIS_LATER":
+    logging.warning("DARSIO_SECRET_KEY is not set; using insecure default session secret.")
+
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.environ.get("DARSIO_SECRET_KEY", "CHANGE_THIS_LATER"),
+    secret_key=SECRET_KEY,
 )
 
 

@@ -47,7 +47,6 @@ def require_admin_user(user:User) -> User | RedirectResponse:
     return user
 
 @router.get("/admin", response_class=HTMLResponse)
-@router.get("/admin/{path:path}", response_class=HTMLResponse)
 def admin_panel(
     request:Request,
     current_user: User = Depends(get_current_user),

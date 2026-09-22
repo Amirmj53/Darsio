@@ -9,11 +9,59 @@ from app.models.chat import Conversation, Message
 from app.models.document import Document
 
 MAX_SUPERADMINS = 3
+STATS_MONTHS = 12
 
 
 def _start_of_today_utc() -> datetime:
     now = datetime.now(timezone.utc)
     return datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
+
+
+def _last_months(n: int = STATS_MONTHS) -> list[str]:
+    """Return the last `n` month keys (YYYY-MM), oldest first."""
+    now = datetime.now(timezone.utc)
+    year, month = now.year, now.month
+    months: list[str] = []
+    for _ in range(n):
+        months.append(f"{year:04d}-{month:02d}")
+        month -= 1
+        if month == 0:
+            month = 12
+            year -= 1
+    months.reverse()
+    return months
+
+
+def _count_by_month(
+    db: Session,
+    months: list[str],
+    column,
+) -> list[int]:
+    """Count rows per month for a datetime column (SQLite strftime grouping)."""
+    first = datetime.strptime(months[0] + "-01", "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    rows = db.execute(
+        select(func.strftime("%Y-%m", column), func.count())
+        .where(column >= first)
+        .group_by(func.strftime("%Y-%m", column))
+    ).all()
+    mapping = {k: v for k, v in rows}
+    return [int(mapping.get(m, 0)) for m in months]
+
+
+def _active_users_by_month(db: Session, months: list[str]) -> list[int]:
+    """Best-effort monthly active users = distinct users who sent a message."""
+    first = datetime.strptime(months[0] + "-01", "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    rows = db.execute(
+        select(
+            func.strftime("%Y-%m", Message.created_at),
+            func.count(func.distinct(Conversation.user_id)),
+        )
+        .join(Conversation, Conversation.id == Message.conversation_id)
+        .where(Message.created_at >= first)
+        .group_by(func.strftime("%Y-%m", Message.created_at))
+    ).all()
+    mapping = {k: v for k, v in rows}
+    return [int(mapping.get(m, 0)) for m in months]
 
 
 def get_stats(db: Session) -> dict:
@@ -36,6 +84,7 @@ def get_stats(db: Session) -> dict:
     messages_total = db.scalar(select(func.count()).select_from(Message)) or 0
     documents_total = db.scalar(select(func.count()).select_from(Document)) or 0
 
+    months = _last_months()
     return {
         "users_total": users_total,
         "users_today": users_today,
@@ -43,6 +92,14 @@ def get_stats(db: Session) -> dict:
         "conversations_total": conversations_total,
         "messages_total": messages_total,
         "documents_total": documents_total,
+        "subscribers_active": 0,  # placeholder — no payment system yet
+        "series": {
+            "months": months,
+            "new_users": _count_by_month(db, months, User.created_at),
+            # «chats» = conversations created in that month (historical count).
+            "chats": _count_by_month(db, months, Conversation.created_at),
+            "active_users": _active_users_by_month(db, months),
+        },
     }
 
 
