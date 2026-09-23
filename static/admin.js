@@ -16,7 +16,14 @@
     const viewerIsSuperadmin = document.body.dataset.superadmin === "1";
 
     const state = {
-        users: { page: 0, q: "", hasNext: false },
+        users: {
+            page: 0,
+            q: "",
+            hasNext: false,
+            is_active: "",
+            phone_verified: "",
+            role: ""
+        },
         conv: { page: 0, q: "", hasNext: false },
         docs: { page: 0, hasNext: false },
         tk: { page: 0, q: "", status: "", category: "", hasNext: false }
@@ -236,16 +243,19 @@
     async function loadUsers(reset = true) {
         if (reset) state.users.page = 0;
         const body = el("users-body");
-        setTableState(body, 5, "در حال بارگذاری...");
+        setTableState(body, 6, "در حال بارگذاری...");
 
         const params = new URLSearchParams();
         if (state.users.q) params.set("q", state.users.q);
+        if (state.users.is_active !== "") params.set("is_active", state.users.is_active);
+        if (state.users.phone_verified !== "") params.set("phone_verified", state.users.phone_verified);
+        if (state.users.role) params.set("role", state.users.role);
         params.set("skip", String(state.users.page * PAGE_SIZE));
         params.set("limit", String(PAGE_SIZE + 1));
 
         const res = await api("/admin/users?" + params.toString());
         if (!res.ok) {
-            setTableState(body, 5, "خطا در بارگذاری");
+            setTableState(body, 6, "خطا در بارگذاری");
             return;
         }
         const rows = await res.json();
@@ -254,13 +264,43 @@
         updatePager("users");
     }
 
+    function readUserFilters() {
+        state.users.q = (el("users-q")?.value || "").trim();
+        state.users.is_active = el("users-filter-active")?.value ?? "";
+        state.users.phone_verified = el("users-filter-phone")?.value ?? "";
+        state.users.role = el("users-filter-role")?.value ?? "";
+    }
+
+    el("users-search-btn")?.addEventListener("click", () => {
+        readUserFilters();
+        loadUsers(true);
+    });
+
+    // Enter در سرچ
+    el("users-q")?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            readUserFilters();
+            loadUsers(true);
+        }
+    });
+    
+
     function renderUsers(items) {
         const body = el("users-body");
         if (!items.length) {
-            setTableState(body, 5, "کاربری پیدا نشد");
+            setTableState(body, 6, "کاربری پیدا نشد");
             return;
         }
         body.innerHTML = items.map(renderUserRow).join("");
+    }
+
+    function formatPhone(phone, verified) {
+        if (!phone) return `<span class="muted">—</span>`;
+        const badge = verified
+            ? `<span class="badge ok" style="margin-inline-start:6px">تأیید</span>`
+            : `<span class="badge" style="margin-inline-start:6px">تأییدنشده</span>`;
+        return `<span dir="ltr">${esc(phone)}</span>${badge}`;
     }
 
     function renderUserRow(u) {
@@ -272,11 +312,13 @@
         const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ");
         const name = fullName || u.display_name || "";
         const userCell = `@${esc(u.username)}` + (name ? `<div class="muted">${esc(name)}</div>` : "");
+        const phoneCell = formatPhone(u.phone_number, u.phone_verified);
 
         if (u.is_superadmin) {
             return `<tr>
                 <td>${userCell}</td>
                 <td>${esc(u.email)}</td>
+                <td>${phoneCell}</td>
                 <td><span class="badge ${roleClass}">${role}</span></td>
                 <td>${status}</td>
                 <td class="muted">—</td>
@@ -296,9 +338,10 @@
         return `<tr>
             <td>${userCell}</td>
             <td>${esc(u.email)}</td>
+            <td>${formatPhone(u.phone_number, u.phone_verified)}</td>
             <td><span class="badge ${roleClass}">${role}</span></td>
             <td>${status}</td>
-            <td class="actions">${actions}</td>
+            <td>${actions}</td>
         </tr>`;
     }
 

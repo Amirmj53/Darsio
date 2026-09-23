@@ -64,15 +64,33 @@
                 <!-- Users -->
                 <section class="panel" id="panel-users">
                     <div class="toolbar">
-                        <input type="search" id="users-q" placeholder="جستجوی یوزرنیم، ایمیل، نام...">
-                        <button type="button" class="btn primary" id="users-search-btn">جستجو</button>
+                        <input type="search" id="users-q" placeholder="جستجوی یوزرنیم، ایمیل، موبایل، نام...">
+                        <select id="users-filter-active" class="toolbar-select">
+                            <option value="">همه وضعیت‌ها</option>
+                            <option value="true">فعال</option>
+                            <option value="false">غیرفعال</option>
+                        </select>
+                        <select id="users-filter-phone" class="toolbar-select">
+                            <option value="">همه موبایل‌ها</option>
+                            <option value="true">موبایل تأییدشده</option>
+                            <option value="false">موبایل تأییدنشده</option>
+                        </select>
+                        <select id="users-filter-role" class="toolbar-select">
+                            <option value="">همه نقش‌ها</option>
+                            <option value="user">کاربر</option>
+                            <option value="admin">ادمین</option>
+                            <option value="superadmin">سوپر</option>
+                        </select>
+                        <button type="button" class="btn primary" id="users-search-btn">اعمال</button>
                     </div>
+
                     <div class="card">
                         <table>
                             <thead>
                                 <tr>
                                     <th>کاربر</th>
                                     <th>ایمیل</th>
+                                    <th>موبایل</th>
                                     <th>نقش</th>
                                     <th>وضعیت</th>
                                     <th></th>

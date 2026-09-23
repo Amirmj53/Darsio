@@ -24,6 +24,8 @@ class AdminUserListItem(BaseModel):
     id: int
     username: str
     email: str
+    phone_number: str | None = None
+    phone_verified: bool = False
     display_name: str | None
     first_name: str | None = None
     last_name: str | None = None

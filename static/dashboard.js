@@ -5,6 +5,9 @@ let openMenuId = null;
 let lastDeletedConversation = null;
 let undoTimeout = null;
 let currentProfile = null;
+let studyMode = "normal"; // normal | exam | research
+let isSending = false;
+let selectedChatFile = null;
 
 const sidebar = document.getElementById("sidebar");
 const toggleSidebarBtn = document.getElementById("toggle-sidebar");
@@ -59,6 +62,40 @@ const SUGGESTIONS = [
 
 let suggestionGen = 0;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const FA_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+function toFaDigits(n) {
+    return String(n).replace(/[0-9]/g, (d) => FA_DIGITS[Number(d)]);
+}
+function formatFileSizeFa(bytes) {
+    if (bytes == null || Number.isNaN(bytes)) return "";
+    if (bytes < 1024) return toFaDigits(bytes) + " بایت";
+    if (bytes < 1024 * 1024) return toFaDigits(Math.round(bytes / 1024)) + " کیلوبایت";
+    const mb = (bytes / (1024 * 1024)).toFixed(1);
+    return toFaDigits(mb) + " مگابایت";
+}
+function growTextarea(el, maxPx) {
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, maxPx || 200) + "px";
+}
+function setSendLoading(loading) {
+    isSending = !!loading;
+    if (!sendBtn) return;
+    sendBtn.classList.toggle("is-loading", isSending);
+    const sendIcon = sendBtn.querySelector(".icon-send");
+    const stopIcon = sendBtn.querySelector(".icon-stop");
+    if (sendIcon) sendIcon.hidden = isSending;
+    if (stopIcon) stopIcon.hidden = !isSending;
+    sendBtn.setAttribute("aria-label", isSending ? "توقف" : "ارسال");
+    sendBtn.disabled = false;
+}
+function clearChatFile() {
+    selectedChatFile = null;
+    const fileInput = document.getElementById("file-input");
+    if (fileInput) fileInput.value = "";
+    document.getElementById("prompt-file-chip")?.classList.remove("show");
+}
 
 async function runSuggestionLoop() {
     const gen = suggestionGen;
@@ -658,80 +695,182 @@ async function performSearch(query) {
 
 // ---------- Send / New chat ----------
 async function sendMessage() {
-    const content = messageInput.value.trim();
-    if (!content) return;
+    if (isSending) return;
+    const contentText = (messageInput?.value || "").trim();
+    if (!contentText && !selectedChatFile) return;
 
-    if (!currentPublicId) {
+    setSendLoading(true);
+    try {
+        if (!currentPublicId) {
+            try {
+                const res = await fetch("/chat/conversations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title: (contentText || "فایل").slice(0, 40) })
+                });
+                if (!res.ok) return;
+                const conv = await res.json();
+                currentPublicId = conv.public_id;
+                setChatUrl(currentPublicId);
+                currentChatTitle.textContent = conv.title;
+                await loadConversations();
+            } catch (err) {
+                console.error(err);
+                return;
+            }
+        }
+
+        if (emptyState && emptyState.parentElement) emptyState.remove();
+        stopSuggestions();
+        messagesContainer.classList.remove("centered");
+
+        const displayText = contentText || (selectedChatFile ? ("فایل: " + selectedChatFile.name) : "");
+        messagesContainer.appendChild(createUserMessage(displayText));
+        if (messageInput) {
+            messageInput.value = "";
+            messageInput.style.height = "auto";
+        }
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        const typing = showTypingIndicator();
         try {
-            const res = await fetch("/chat/conversations", {
+            // Only `content` is required by backend today; study_mode is optional/future.
+            const payload = { content: contentText || displayText };
+            try { payload.study_mode = studyMode; } catch (_) {}
+
+            const res = await fetch(`/chat/conversations/${currentPublicId}/messages`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title: content.slice(0, 40) })
+                body: JSON.stringify(payload)
             });
+            typing.remove();
             if (!res.ok) return;
-            const conv = await res.json();
-            currentPublicId = conv.public_id;
-            setChatUrl(currentPublicId);
-            currentChatTitle.textContent = conv.title;
+
+            const modeLabel = { normal: "عادی", exam: "امتحانی", research: "تحقیق" }[studyMode] || "عادی";
+            const assistantEl = createAssistantMessage();
+            messagesContainer.appendChild(assistantEl);
+            await typeWriter(
+                assistantEl,
+                `پیامت رو دریافت کردم (حالت ${modeLabel}). به زودی مدل هوش مصنوعی به این بخش اضافه می‌شه.`,
+                28
+            );
+
+            clearChatFile();
+
+            const convRes = await fetch(`/chat/conversations/${currentPublicId}`);
+            if (convRes.ok) {
+                const data = await convRes.json();
+                currentChatTitle.textContent = data.title;
+            }
             await loadConversations();
         } catch (err) {
+            typing.remove();
             console.error(err);
+        }
+    } finally {
+        setSendLoading(false);
+    }
+}
+
+
+if (sendBtn) {
+    sendBtn.onclick = () => {
+        if (isSending) {
+            setSendLoading(false);
             return;
         }
-    }
-
-    if (emptyState && emptyState.parentElement) emptyState.remove();
-    stopSuggestions();
-    messagesContainer.classList.remove("centered");
-
-    messagesContainer.appendChild(createUserMessage(content));
-    messageInput.value = "";
-    messageInput.style.height = "auto";
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-    const typing = showTypingIndicator();
-    try {
-        const res = await fetch(`/chat/conversations/${currentPublicId}/messages`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content })
-        });
-        typing.remove();
-        if (!res.ok) return;
-
-        const assistantEl = createAssistantMessage();
-        messagesContainer.appendChild(assistantEl);
-        await typeWriter(
-            assistantEl,
-            "پیامت رو دریافت کردم. به زودی مدل هوش مصنوعی به این بخش اضافه می‌شه.",
-            28
-        );
-
-        const convRes = await fetch(`/chat/conversations/${currentPublicId}`);
-        if (convRes.ok) {
-            const data = await convRes.json();
-            currentChatTitle.textContent = data.title;
-        }
-        await loadConversations();
-    } catch (err) {
-        typing.remove();
-        console.error(err);
-    }
+        sendMessage();
+    };
 }
-
-if (sendBtn) sendBtn.onclick = sendMessage;
 if (messageInput) {
     messageInput.addEventListener("keydown", (e) => {
+        if (e.isComposing) return;
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            sendMessage();
+            if (!isSending) sendMessage();
         }
     });
-    messageInput.addEventListener("input", function onInput() {
-        this.style.height = "auto";
-        this.style.height = `${Math.min(this.scrollHeight, 140)}px`;
-    });
+    messageInput.addEventListener("input", () => growTextarea(messageInput, 200));
 }
+
+// Study mode selector (مثل Fast/Auto — منوی کشویی)
+const MODE_LABELS = {
+    normal: "عادی",
+    exam: "امتحانی",
+    research: "تحقیق"
+};
+
+const modeSelect = document.getElementById("mode-select");
+const modeTrigger = document.getElementById("mode-trigger");
+const modeMenu = document.getElementById("mode-menu");
+const modeTriggerLabel = document.getElementById("mode-trigger-label");
+
+function setStudyMode(mode) {
+    studyMode = MODE_LABELS[mode] ? mode : "normal";
+    if (modeTriggerLabel) modeTriggerLabel.textContent = MODE_LABELS[studyMode];
+    document.querySelectorAll(".mode-option").forEach((opt) => {
+        const on = opt.dataset.mode === studyMode;
+        opt.classList.toggle("active", on);
+        opt.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    closeModeMenu();
+}
+
+function openModeMenu() {
+    if (!modeMenu || !modeTrigger) return;
+    modeMenu.hidden = false;
+    modeTrigger.setAttribute("aria-expanded", "true");
+}
+
+function closeModeMenu() {
+    if (!modeMenu || !modeTrigger) return;
+    modeMenu.hidden = true;
+    modeTrigger.setAttribute("aria-expanded", "false");
+}
+
+function toggleModeMenu() {
+    if (!modeMenu) return;
+    if (modeMenu.hidden) openModeMenu();
+    else closeModeMenu();
+}
+
+modeTrigger?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleModeMenu();
+});
+
+modeMenu?.addEventListener("click", (e) => {
+    const opt = e.target.closest(".mode-option");
+    if (!opt) return;
+    setStudyMode(opt.dataset.mode);
+});
+
+document.addEventListener("click", (e) => {
+    if (!modeSelect?.contains(e.target)) closeModeMenu();
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModeMenu();
+});
+
+setStudyMode(studyMode || "normal");
+
+// Chat file attach chip
+const chatFileInput = document.getElementById("file-input");
+const promptFileChip = document.getElementById("prompt-file-chip");
+const promptFileName = document.getElementById("prompt-file-name");
+const promptFileSize = document.getElementById("prompt-file-size");
+const promptFileRemove = document.getElementById("prompt-file-remove");
+
+chatFileInput?.addEventListener("change", () => {
+    const f = chatFileInput.files?.[0];
+    if (!f) return;
+    selectedChatFile = f;
+    if (promptFileName) promptFileName.textContent = f.name;
+    if (promptFileSize) promptFileSize.textContent = formatFileSizeFa(f.size);
+    promptFileChip?.classList.add("show");
+});
+promptFileRemove?.addEventListener("click", clearChatFile);
 
 if (newChatBtn) {
     newChatBtn.onclick = () => {
@@ -1198,19 +1337,86 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeFeedback();
 });
 
-document.getElementById("fb-file")?.addEventListener("change", (e) => {
-    const file = e.target.files?.[0];
+// Feedback drop zone + file preview
+(function initFeedbackDrop() {
+    const drop = document.getElementById("fb-drop");
+    const input = document.getElementById("fb-file");
+    const nameEl = document.getElementById("fb-drop-name");
+    const sizeEl = document.getElementById("fb-drop-size");
+    const thumb = document.getElementById("fb-drop-thumb");
     const preview = document.getElementById("fb-preview");
-    preview.innerHTML = "";
-    if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-        toast("فقط تصویر JPG، PNG یا WEBP مجاز است", "error");
-        e.target.value = "";
-        return;
+
+    function applyFile(file) {
+        if (!file) return;
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            toast("فقط تصویر JPG، PNG یا WEBP مجاز است", "error");
+            if (input) input.value = "";
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast("حداکثر حجم فایل ۵ مگابایت است", "error");
+            if (input) input.value = "";
+            return;
+        }
+        try {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            if (input) input.files = dt.files;
+        } catch (_) {}
+        if (drop) drop.classList.add("has-file");
+        if (nameEl) nameEl.textContent = file.name;
+        if (sizeEl) sizeEl.textContent = formatFileSizeFa(file.size);
+        const url = URL.createObjectURL(file);
+        if (thumb) {
+            thumb.src = url;
+            thumb.alt = file.name;
+        }
+        if (preview) {
+            preview.innerHTML = `<img src="${url}" alt=""><span class="fb-file-name">${escHtml(file.name)}</span>`;
+        }
     }
-    const url = URL.createObjectURL(file);
-    preview.innerHTML = `<img src="${url}" alt=""><span class="fb-file-name">${escHtml(file.name)}</span>`;
-});
+
+    function clearFeedbackFile() {
+        if (input) input.value = "";
+        drop?.classList.remove("has-file");
+        if (thumb) thumb.removeAttribute("src");
+        if (preview) preview.innerHTML = "";
+    }
+
+    if (drop && input) {
+        drop.addEventListener("click", () => input.click());
+        drop.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                input.click();
+            }
+        });
+        ["dragenter", "dragover"].forEach((ev) => {
+            drop.addEventListener(ev, (e) => {
+                e.preventDefault();
+                drop.classList.add("dragover");
+            });
+        });
+        ["dragleave", "drop"].forEach((ev) => {
+            drop.addEventListener(ev, (e) => {
+                e.preventDefault();
+                drop.classList.remove("dragover");
+            });
+        });
+        drop.addEventListener("drop", (e) => {
+            const f = e.dataTransfer?.files?.[0];
+            if (f) applyFile(f);
+        });
+    }
+
+    input?.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        if (file) applyFile(file);
+        else clearFeedbackFile();
+    });
+
+    window.__clearFeedbackFile = clearFeedbackFile;
+})();
 
 document.getElementById("feedback-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -1242,6 +1448,10 @@ document.getElementById("feedback-form")?.addEventListener("submit", async (e) =
         }
         e.target.reset();
         document.getElementById("fb-preview").innerHTML = "";
+        document.getElementById("fb-drop")?.classList.remove("has-file");
+        const thumbEl = document.getElementById("fb-drop-thumb");
+        if (thumbEl) thumbEl.removeAttribute("src");
+        if (typeof window.__clearFeedbackFile === "function") window.__clearFeedbackFile();
         status.textContent = "تیکت با موفقیت ثبت شد";
         status.classList.add("ok");
         toast("تیکت ثبت شد", "success");

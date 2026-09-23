@@ -38,10 +38,26 @@ def users(
     q: str | None = Query(default=None),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=100),
-    _: User = Depends(get_current_admin),
+    is_active: bool | None = Query(default=None),
+    phone_verified: bool | None = Query(default=None),
+    role: str | None = Query(default=None, pattern="^(user|admin|superadmin)$"),
+    current_admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    return admin_service.list_users(db, q=q, skip=skip, limit=limit)
+    rows = admin_service.list_users(
+        db,
+        q=q,
+        skip=skip,
+        limit=limit,
+        is_active=is_active,
+        phone_verified=phone_verified,
+        role=role,
+    )
+    viewer_super = bool(getattr(current_admin, "is_superadmin", False))
+    return [
+        admin_service.serialize_admin_user(u, viewer_is_superadmin=viewer_super)
+        for u in rows
+    ]
 
 
 @router.get("/users/{user_id}", response_model=AdminUserListItem)

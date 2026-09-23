@@ -103,13 +103,50 @@ def get_stats(db: Session) -> dict:
     }
 
 
+def mask_phone(phone: str | None) -> str | None:
+    """09123456789 → 0912***6789"""
+    if not phone:
+        return None
+    p = phone.strip()
+    if len(p) < 8:
+        return "***"
+    return f"{p[:4]}***{p[-4:]}"
+
+
+def serialize_admin_user(user: User, *, viewer_is_superadmin: bool) -> dict:
+    phone = user.phone_number
+    if phone and not viewer_is_superadmin:
+        phone = mask_phone(phone)
+
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "phone_number": phone,
+        "phone_verified": bool(getattr(user, "phone_verified", False)),
+        "display_name": user.display_name,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "is_active": user.is_active,
+        "is_admin": user.is_admin,
+        "is_superadmin": bool(getattr(user, "is_superadmin", False)),
+        "created_at": user.created_at,
+        "last_login_at": user.last_login_at,
+    }
+
+
 def list_users(
     db: Session,
     q: str | None = None,
     skip: int = 0,
     limit: int = 50,
+    *,
+    is_active: bool | None = None,
+    phone_verified: bool | None = None,
+    role: str | None = None,  # "user" | "admin" | "superadmin"
 ) -> list[User]:
     stmt = select(User).order_by(User.created_at.desc())
+
     if q:
         like = f"%{q.strip()}%"
         stmt = stmt.where(
@@ -117,16 +154,24 @@ def list_users(
                 User.username.ilike(like),
                 User.email.ilike(like),
                 User.display_name.ilike(like),
+                User.phone_number.ilike(like),
             )
         )
+
+    if is_active is not None:
+        stmt = stmt.where(User.is_active.is_(is_active))
+
+    if phone_verified is not None:
+        stmt = stmt.where(User.phone_verified.is_(phone_verified))
+
+    if role == "superadmin":
+        stmt = stmt.where(User.is_superadmin.is_(True))
+    elif role == "admin":
+        stmt = stmt.where(User.is_admin.is_(True), User.is_superadmin.is_(False))
+    elif role == "user":
+        stmt = stmt.where(User.is_admin.is_(False), User.is_superadmin.is_(False))
+
     return list(db.scalars(stmt.offset(skip).limit(min(limit, 100))).all())
-
-
-def get_user(db: Session, user_id: int) -> User:
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="کاربر پیدا نشد")
-    return user
 
 
 def update_user(

@@ -4,22 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ورود | درسیو</title>
-    <meta name="description" content="ورود به حساب درسیو">
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/auth.css">
+    <link rel="stylesheet" href="/static/auth.css?v=5">
 </head>
 <body>
     <div class="auth-bg" aria-hidden="true">
-        <span class="auth-orb auth-orb-1"></span>
-        <span class="auth-orb auth-orb-2"></span>
-        <span class="auth-orb auth-orb-3"></span>
-        <div class="auth-mesh"></div>
-        <div class="auth-noise"></div>
+        <div class="stars" id="stars"></div>
     </div>
 
     <main class="auth-shell">
         <div class="auth-card">
-            <a href="/" class="auth-brand" data-transition>
+            <a href="/" class="auth-brand">
                 <span class="logo-mark">
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M2.5 9c2.5 0 2.5 4.2 5 4.2S10 9 12 9s2.5 4.2 5 4.2S19.5 9 21.5 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -29,77 +24,37 @@
                 <span>درسیو</span>
             </a>
 
-            <div class="auth-head">
-                <h1>خوش برگشتی</h1>
-                <p>وارد حسابت شو و از همون‌جایی که موندی ادامه بده</p>
-            </div>
+            <h1 class="auth-title">ورود</h1>
+            <p class="auth-sub">با ایمیل و رمز وارد حسابت شو.</p>
 
-            {% if error %}
-                <div class="banner" role="alert">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="9"/>
-                        <path d="M12 8v4M12 16h.01"/>
-                    </svg>
-                    <span>{{ error }}</span>
-                </div>
+            {% if auth_error %}
+            <div class="auth-error" role="alert">{{ auth_error }}</div>
             {% endif %}
 
-            <form class="auth-form" action="/auth/login/form" method="post" id="login-form">
+            <form action="/auth/login/form" method="post" novalidate>
                 <div class="field">
                     <label for="email">ایمیل</label>
-                    <div class="input-wrap">
-                        <input type="email" id="email" name="email" placeholder="you@example.com"
-                               value="{{ email }}" required autocomplete="email" dir="ltr">
-                        <span class="input-icon">
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                <rect x="3" y="5" width="18" height="14" rx="2"/>
-                                <path d="M3 7l9 6 9-6"/>
-                            </svg>
-                        </span>
-                    </div>
+                    <input type="email" id="email" name="email" autocomplete="email" required>
                 </div>
-
                 <div class="field">
                     <label for="password">رمز عبور</label>
-                    <div class="input-wrap">
-                        <input type="password" id="password" name="password" placeholder="رمزت رو وارد کن"
-                               required autocomplete="current-password">
-                        <span class="input-icon">
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                <rect x="4" y="10" width="16" height="10" rx="2"/>
-                                <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
-                            </svg>
-                        </span>
-                        <button type="button" class="toggle-pass" data-toggle-password="password" aria-label="نمایش رمز عبور">
-                            <svg class="eye-on" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
-                                <circle cx="12" cy="12" r="2.5"/>
-                            </svg>
-                            <svg class="eye-off" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                <path d="M3 3l18 18M10.6 5.1A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.6M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.6 9.6 0 0 0 4.6-1.2"/>
-                            </svg>
-                        </button>
-                    </div>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
                 </div>
-
-                <div class="forgot-row">
-                    <button type="button" class="link-btn" onclick="showAuthToast('بازیابی رمز عبور به‌زودی اضافه می‌شود.')">
-                        رمزت رو فراموش کرده‌ای؟
-                    </button>
+                <div class="step-actions">
+                    <button type="submit" class="btn-primary">ورود</button>
                 </div>
-
-                <button type="submit" class="btn-primary">
-                    <span class="btn-label">ورود به حساب</span>
-                </button>
             </form>
 
-            <div class="auth-footer">
-                هنوز حساب نساختی؟ <a href="/auth/register" data-transition>ساخت حساب</a>
-            </div>
-            <a href="/" class="back-link" data-transition>بازگشت به صفحه اصلی</a>
+            <p class="auth-footer">
+                حساب نداری؟
+                <a href="/auth/register">ثبت‌نام</a>
+            </p>
+            <p class="auth-footer">
+                <a href="/">بازگشت به صفحه اصلی</a>
+            </p>
         </div>
     </main>
 
-    <script src="/static/auth.js"></script>
+    <script src="/static/auth.js?v=5" defer></script>
 </body>
 </html>
