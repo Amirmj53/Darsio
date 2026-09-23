@@ -18,6 +18,7 @@ class UserCreate(BaseModel):
     last_name: str = Field(min_length=1, max_length=80)
     username: str = Field(min_length=3, max_length=30)
     email: EmailStr
+    phone_number: str = Field(min_length=10, max_length=15)
     password: str = Field(min_length=8, max_length=128)
     education_level: str | None = Field(default=None, max_length=80)
     field_of_study: str | None = Field(default=None, max_length=120)
@@ -51,6 +52,12 @@ class UserCreate(BaseModel):
     @classmethod
     def normalize_email(cls, value: EmailStr) -> str:
         return str(value).strip().lower()
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone(cls, value: str) -> str:
+        from app.validation import normalize_iran_phone 
+        return normalize_iran_phone(value)
 
     @field_validator("password")
     @classmethod

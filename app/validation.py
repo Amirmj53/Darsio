@@ -6,6 +6,7 @@ without ever leaking framework internals to the user.
 """
 
 from typing import Any
+import re
 
 FIELD_LABELS: dict[str, str] = {
     "first_name": "نام",
@@ -63,3 +64,34 @@ def first_friendly_error(errors: list[dict[str, Any]]) -> str:
     message = str(err.get("msg", ""))
 
     return _render(field, error_type, message)
+
+
+_IR_MOBILE_RE = re.compile(r"^09\d{9}$")
+
+
+def normalize_iran_phone(value: str) -> str:
+    """
+    ورودی‌های رایج را به 09xxxxxxxxx تبدیل می‌کند.
+    در غیر این صورت ValueError.
+    """
+    if value is None:
+        raise ValueError("شماره موبایل الزامی است")
+
+    raw = str(value).strip().replace(" ", "").replace("-", "")
+  
+    trans = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+    raw = raw.translate(trans)
+
+    if raw.startswith("+98"):
+        raw = "0" + raw[3:]
+    elif raw.startswith("0098"):
+        raw = "0" + raw[4:]
+    elif raw.startswith("98") and len(raw) == 12:
+        raw = "0" + raw[2:]
+    elif raw.startswith("9") and len(raw) == 10:
+        raw = "0" + raw
+
+    if not _IR_MOBILE_RE.fullmatch(raw):
+        raise ValueError("شماره موبایل معتبر نیست (مثال: 09123456789)")
+
+    return raw

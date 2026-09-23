@@ -72,6 +72,27 @@ def ensure_user_columns() -> None:
                 )
             )
 
+        if "phone_number" not in existing:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN phone_number VARCHAR(15)"
+                )
+            )
+            conn.execute(
+                text(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS "
+                    "ix_users_phone_number ON users(phone_number)"
+                )
+            )
+
+        if "phone_verified" not in existing:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN phone_verified "
+                    "BOOLEAN DEFAULT 0 NOT NULL"
+                )
+            )
+
 def ensure_conversation_public_ids() -> None:
     """Add public_id to conversations and backfill existing rows."""
     inspector = inspect(engine)

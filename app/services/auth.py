@@ -71,6 +71,12 @@ def create_user(
 ):
     username = user_data.username
     email = str(user_data.email)
+    existing_phone = db.scalar(
+        select(User).where(User.phone_number == user_data.phone_number)
+    )
+
+    if existing_phone:
+        raise ValueError("این شماره موبایل قبلاً ثبت شده است")
 
     if get_user_by_email(db, email) is not None:
         raise ValueError("این ایمیل قبلاً ثبت شده.")
@@ -84,6 +90,8 @@ def create_user(
     user = User(
         username=username,
         email=email,
+        phone_number=user_data.phone_number,
+        phone_verified=False,
         first_name=first_name,
         last_name=last_name,
         display_name=f"{first_name} {last_name}".strip(),
@@ -95,7 +103,8 @@ def create_user(
         is_superadmin = False,
         password_hash=hash_password(
             user_data.password
-        )
+        ),
+        is_verified = False,
     )
 
     try: 

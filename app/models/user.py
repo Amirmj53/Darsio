@@ -75,6 +75,19 @@ class User(Base):
         nullable=False
     )
 
+    phone_number: Mapped[str | None] = mapped_column(
+        String(15),
+        unique=True,
+        index=True,
+        nullable=True, 
+    )
+
+    phone_verified: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+
     password_hash: Mapped[str] = mapped_column(
         String(255),
         nullable=False
