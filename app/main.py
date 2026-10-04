@@ -67,3 +67,4 @@ app.include_router(admin.router)
 app.include_router(tickets.router)
 
 
+print("Hello, World")
